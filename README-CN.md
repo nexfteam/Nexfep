@@ -1,6 +1,6 @@
 # Nexfep
 
-语言: [English](https://github.com/zhuxiaojt/Nexfep/blob/master/README.md) | 简体中文(当前)
+语言: [English](https://github.com/zhuxiaojt/Nexfep/blob/main/README.md) | 简体中文(当前)
 
 基于 @webviewjs/webview 的桌面应用框架
 

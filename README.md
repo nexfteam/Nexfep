@@ -1,6 +1,6 @@
 # Nexfep
 
-Language: English(now) | [简体中文](https://github.com/zhuxiaojt/Nexfep/blob/master/README-CN.md)
+Language: English(now) | [简体中文](https://github.com/zhuxiaojt/Nexfep/blob/main/README-CN.md)
 
 A desktop application framework based on @webviewjs/webview
 

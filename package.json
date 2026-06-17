@@ -1,7 +1,20 @@
 {
   "name": "nexfep",
   "description": "A desktop application framework based on @webviewjs/webview",
-  "version": "0.0.3",
+  "repository": "https://github.com/zhuxiaojt/Nexfep",
+  "homepage": "https://github.com/zhuxiaojt/Nexfep#readme",
+  "bugs": {
+    "url": "https://github.com/zhuxiaojt/Nexfep/issues"
+  },
+  "keywords": [
+    "desktop",
+    "application",
+    "framework",
+    "@webviewjs/webview",
+    "webview",
+    "typescript"
+  ],
+  "version": "0.0.4",
   "type": "module",
   "packageManager": "pnpm@9.15.9",
   "main": "./index.js",
