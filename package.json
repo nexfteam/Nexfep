@@ -1,0 +1,23 @@
+{
+  "name": "nexfep",
+  "version": "0.0.1",
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "main": "./index.js",
+  "scripts": {
+    "compile": "tsc"
+  },
+  "author": "zhuxiaojt",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@webviewjs/webview": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

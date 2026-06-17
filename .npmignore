@@ -1,0 +1,8 @@
+.gitignore
+.git/
+node_modules
+test/
+index.ts
+test.ts
+pnpm-lock.yaml
+tsconfig.json
