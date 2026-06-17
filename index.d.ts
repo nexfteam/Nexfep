@@ -27,6 +27,8 @@ declare class WindowPool {
     onCustomMessage: (window: Window, data: string) => void;
     private app;
     private windows;
+    private handlers;
+    private injectCount;
     private windowCount;
     private freeWindowCount;
     constructor(WindowsWebview2UserDataFolder?: string);
@@ -36,6 +38,8 @@ declare class WindowPool {
     createWindow(isShow?: boolean, isDecorated?: boolean): Promise<Window>;
     closeWindow(window: Window): Promise<void>;
     closePool(): Promise<void>;
+    handle(event: string, callback: (data: any) => any): Promise<void>;
+    unhandle(event: string, callback: (data: any) => any): Promise<void>;
     mainloop(): void;
 }
 export { WindowPool, Window };

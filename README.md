@@ -112,6 +112,49 @@ pool.onCustomMessage = (window, data) => {
 - `window` — The window object that sent the message
 - `data` — Message content, an object type (automatically converted from JSON string via `JSON.parse`)
 
+#### Invoke Custom Events
+
+Invoke events via `window.invoke` in the page:
+
+```javascript
+window.invoke('hello', 'world');
+```
+
+**Parameters**
+
+- `event` — Event name
+- `data` — Any serializable data, will be serialized to JSON string before sending
+
+#### Listen for Events
+
+Listen for events via `pool.handle` in the main process:
+
+```typescript
+pool.handle('hello', (data) => {
+  console.log('Received event hello:', data);
+});
+```
+
+**Parameters**
+
+- `event` — Event name, must match the event name when invoking
+- `callback` — Event handler function, receives event data as `data` parameter. Can return any serializable data, which will be serialized to JSON string and sent back to the frontend as the return value of `window.invoke` (can also return nothing)
+
+#### Remove Event Listener
+
+Remove event listener via `pool.unhandle` in the main process:
+
+```typescript
+pool.unhandle('hello', (data) => {
+  console.log('Received event hello:', data);
+});
+```
+
+**Parameters**
+
+- `event` — Event name, must match the event name when listening
+- `callback` — Event handler function, must match the callback function when listening
+
 #### Window Control Functions
 
 The following injected functions can be directly called in the page for window control:
@@ -203,6 +246,8 @@ if (window.isNexfepLoadDone) {
 | ------------------------------------- | -------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------ |
 | `constructor(userDataFolder?)`        | `userDataFolder`: string (optional)                                        | WindowPool       | Creates a window pool, optionally specifying the WebView2 user data directory |
 | `createWindow(isShow?, isDecorated?)` | `isShow`: boolean (default true), `isDecorated`: boolean (default true)    | Promise\<Window> | Creates and returns a window                                             |
+| `handle(event, callback)`            | `event`: string, `callback`: (data: string) => void                       | None             | Listens for the specified event, triggers callback when event is received   |
+| `unhandle(event, callback)`           | `event`: string, `callback`: (data: string) => void                       | None             | Removes the specified callback from the event listener                     |
 | `closeWindow(window)`                 | `window`: Window                                                           | Promise\<void>   | Closes the specified window and returns it to the pool                   |
 | `closePool()`                         | None                                                                       | Promise\<void>   | Closes the window pool and exits the application                         |
 | `mainloop()`                          | None                                                                       | void             | Starts the application main loop, blocking until the application exits   |

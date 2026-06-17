@@ -112,6 +112,49 @@ pool.onCustomMessage = (window, data) => {
 - `window` — 发送消息的窗口对象
 - `data` — 消息内容，为对象类型（JSON 序列化后会自动通过 `JSON.parse` 转换为对象）
 
+#### 触发自定义事件
+
+在页面中通过 `window.invoke` 触发事件：
+
+```javascript
+window.invoke('hello', 'world');
+```
+
+**参数说明**
+
+- `event` — 事件名称
+- `data` — 任意类型的可序列化数据，会被序列化为 JSON 字符串后发送
+
+#### 监听事件
+
+在主进程中通过 `pool.handle` 监听事件：
+
+```typescript
+pool.handle('hello', (data) => {
+  console.log('收到事件 hello:', data);
+});
+```
+
+**参数说明**
+
+- `event` — 事件名称，需要和触发事件时的事件名称一致
+- `callback` — 事件处理函数，需要接收事件数据作为 `data` 参数。返回任意类型的可序列化数据，会被序列化为 JSON 字符串后发送至前端作为 `window.invoke` 的返回值（也可以不返回任何值）
+
+#### 取消监听事件
+
+在主进程中通过 `pool.unhandle` 取消监听事件：
+
+```typescript
+pool.unhandle('hello', (data) => {
+  console.log('收到事件 hello:', data);
+});
+```
+
+**参数说明**
+
+- `event` — 事件名称，需要和触发事件时的事件名称一致
+- `callback` — 事件处理函数，需要和监听事件时的回调函数一致
+
 #### 窗口控制函数
 
 页面中可直接调用以下注入函数进行窗口控制：
@@ -203,6 +246,8 @@ if (window.isNexfepLoadDone) {
 | ------------------------------------- | ----------------------------------------------------------- | ---------------- | -------------------------- |
 | `constructor(userDataFolder?)`        | `userDataFolder`: string（可选）                                | WindowPool       | 创建窗口池，可选指定 WebView2 用户数据目录 |
 | `createWindow(isShow?, isDecorated?)` | `isShow`: boolean（默认 true）, `isDecorated`: boolean（默认 true） | Promise\<Window> | 创建并获取一个窗口                  |
+| `handle(event, callback)`             | `event`: string, `callback`: (data: string) => void | 无                | 监听指定事件，当收到事件时触发回调函数 |
+| `unhandle(event, callback)`                     | `event`: string, `callback`: (data: string) => void | 无                | 取消监听指定事件回调中的指定函数 |
 | `closeWindow(window)`                 | `window`: Window                                            | Promise\<void>   | 关闭指定窗口并回收至池中               |
 | `closePool()`                         | 无                                                           | Promise\<void>   | 关闭窗口池，退出应用                 |
 | `mainloop()`                          | 无                                                           | void             | 启动应用主循环，阻塞直到应用退出           |

@@ -14,7 +14,7 @@
     "webview",
     "typescript"
   ],
-  "version": "0.0.4",
+  "version": "0.1.0",
   "type": "module",
   "packageManager": "pnpm@9.15.9",
   "main": "./index.js",

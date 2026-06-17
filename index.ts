@@ -74,6 +74,8 @@ class WindowPool {
     onCustomMessage: (window: Window, data: string) => void;
     private app: Application;
     private windows: Window[];
+    private handlers: Map<string, Array<(data: any) => any>>;
+    private injectCount: number;
     private windowCount: number;
     private freeWindowCount: number;
     constructor(WindowsWebview2UserDataFolder: string = path.join(process.env.LOCALAPPDATA || os.homedir(), 'NexfepDevelopment.webview2-data') ) {
@@ -89,7 +91,9 @@ class WindowPool {
         this.onCustomMessage = (window: Window, data: string) => {
             console.log('Get Custom Message:', data, "from window", window.id);
         };
+        this.handlers = new Map();
         this.app = new Application();
+        this.injectCount = 0;
         this.windows = [];
         this.windowCount = 0;
         this.freeWindowCount = 0;
@@ -184,6 +188,23 @@ class WindowPool {
             const MessageBody = { type: 'CustomMessage', data: data }
             window.ipc.postMessage(JSON.stringify(MessageBody));
         };
+
+        window.eventCount = 0;
+
+        window.invoke = async (event, data) => {
+            const MessageBody = { type: 'NexfepInvoke', eventId: [${this.injectCount}, ++window.eventCount], event: event, data: data }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+            return new Promise((resolve, reject) => {
+                window.addEventListener("nexfep-invoke-result-"+${this.injectCount}+"-"+window.eventCount, (event) => {
+                    window.removeEventListener("nexfep-invoke-result-"+${this.injectCount}+"-"+window.eventCount, event);
+                    if(event.detail){
+                        resolve(event.detail);
+                    }else{
+                        resolve();
+                    }
+                });
+            });
+        }
         
         // 注入 CSS 样式
         const style = document.createElement('style');
@@ -239,6 +260,20 @@ class WindowPool {
                 webview.closeDevtools();
             } else if (dataObj.type == 'CustomMessage') {
                 this.onCustomMessage(windowObj, dataObj.data);
+            } else if (dataObj.type == 'NexfepInvoke') {
+                const handlers = this.handlers.get(dataObj.event) || [];
+                handlers.forEach(async handler => {
+                    const result = await handler(dataObj.data);
+                    if(result){
+                        webview.evaluateScript(`
+                            window.dispatchEvent(new Event('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(result)} }));
+                        `);
+                    }else{
+                        webview.evaluateScript(`
+                            window.dispatchEvent(new Event('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: undefined }));
+                        `);
+                    }
+                });
             }
         });
         return windowObj;
@@ -273,6 +308,12 @@ class WindowPool {
     }
     async closePool(){
         this.app.exit();
+    }
+    async handle(event: string, callback: (data: any) => any){
+        this.handlers.set(event, [...this.handlers.get(event) || [], callback]);
+    }
+    async unhandle(event: string, callback: (data: any) => any){
+        this.handlers.set(event, (this.handlers.get(event) || []).filter(c => c !== callback));
     }
     mainloop(){
         this.app.run();
