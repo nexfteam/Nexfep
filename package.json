@@ -16,7 +16,6 @@
   ],
   "version": "0.1.1",
   "type": "module",
-  "packageManager": "pnpm@9.15.9",
   "main": "./index.js",
   "scripts": {
     "compile": "tsc"
