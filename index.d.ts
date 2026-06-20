@@ -31,6 +31,7 @@ declare class WindowPool {
     private injectCount;
     private windowCount;
     private freeWindowCount;
+    global: Map<string, any>;
     constructor(WindowsWebview2UserDataFolder?: string);
     __injectCode(window: Window, code: string): Promise<void>;
     __injectControlFunctions(windowObj: Window): Promise<void>;

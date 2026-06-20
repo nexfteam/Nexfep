@@ -6,6 +6,7 @@ index.ts
 test.ts
 test.js
 pnpm-lock.yaml
+pnpm-workspace.yaml
 tsconfig.json
 .vscode/
 .trae/

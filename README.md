@@ -71,7 +71,7 @@ const win = await pool.createWindow(true, false);
 
 ### Window Operations
 
-```typescript
+```javascript
 window.show();
 window.hide();
 window.maximize();
@@ -81,11 +81,9 @@ window.setTitle('New Title');
 window.openDevTools();
 ```
 
-### IPC Communication
+### Custom Messages
 
-The framework automatically injects a series of control functions after WebView page loading is complete. It is recommended to use these injected functions for IPC communication, rather than the native IPC wrapped by `@webviewjs/webview`.
-
-#### Send Custom Messages
+#### Send Messages
 
 Send messages via `window.postMessage` in the page:
 
@@ -112,7 +110,9 @@ pool.onCustomMessage = (window, data) => {
 - `window` — The window object that sent the message
 - `data` — Message content, an object type (automatically converted from JSON string via `JSON.parse`)
 
-#### Invoke Custom Events
+### Custom Events
+
+#### Invoke Events
 
 Invoke events via `window.invoke` in the page:
 
@@ -155,7 +155,44 @@ pool.unhandle('hello', (data) => {
 - `event` — Event name, must match the event name when listening
 - `callback` — Event handler function, must match the callback function when listening
 
-#### Window Control Functions
+### Global Variables
+
+#### Set Variables
+
+Set a global variable via `window.setGlobal` in the page:
+
+```javascript
+window.setGlobal('hello', 'world');
+```
+
+**Parameters**
+
+- `name` — Global variable name
+- `value` — Global variable value, any serializable data, will be serialized to JSON string before sending
+
+#### Get Variables
+
+Get a global variable via `window.getGlobal` in the page:
+
+```javascript
+const value = await window.getGlobal('hello');
+```
+
+**Parameters**
+
+- `name` — Global variable name
+
+#### Global Variable Map
+
+Get a `Map<string, any>` containing all global variables via `WindowPool.global` in the main process, which supports operations like set and get:
+
+```typescript
+const globals = pool.global;
+globals.set('hello', 'world');
+const value = globals.get('hello');
+```
+
+### Window Control Functions
 
 The following injected functions can be directly called in the page for window control:
 
@@ -246,8 +283,9 @@ if (window.isNexfepLoadDone) {
 | ------------------------------------- | -------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------ |
 | `constructor(userDataFolder?)`        | `userDataFolder`: string (optional)                                        | WindowPool       | Creates a window pool, optionally specifying the WebView2 user data directory |
 | `createWindow(isShow?, isDecorated?)` | `isShow`: boolean (default true), `isDecorated`: boolean (default true)    | Promise\<Window> | Creates and returns a window                                             |
-| `handle(event, callback)`            | `event`: string, `callback`: (data: string) => void                       | None             | Listens for the specified event, triggers callback when event is received   |
-| `unhandle(event, callback)`           | `event`: string, `callback`: (data: string) => void                       | None             | Removes the specified callback from the event listener                     |
+| `handle(event, callback)`             | `event`: string, `callback`: (data: string) => void                        | None             | Listens for the specified event, triggers callback when event is received |
+| `unhandle(event, callback)`           | `event`: string, `callback`: (data: string) => void                        | None             | Removes the specified callback from the event listener                     |
+| `global`                              | /                                                                          | Map\<string, any> | A global variable map of type: `Map<string, any>`                         |
 | `closeWindow(window)`                 | `window`: Window                                                           | Promise\<void>   | Closes the specified window and returns it to the pool                   |
 | `closePool()`                         | None                                                                       | Promise\<void>   | Closes the window pool and exits the application                         |
 | `mainloop()`                          | None                                                                       | void             | Starts the application main loop, blocking until the application exits   |

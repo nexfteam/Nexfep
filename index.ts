@@ -64,10 +64,8 @@ class Window {
         await this.myPool.__injectControlFunctions(this);
     }
     async loadHTML(html: string){
-        console.log("Before loadHTML");
         await this.webview.loadHtml(html);
         await this.myPool.__injectControlFunctions(this);
-        console.log("After loadHTML");
     }
 }
 class WindowPool {
@@ -78,6 +76,7 @@ class WindowPool {
     private injectCount: number;
     private windowCount: number;
     private freeWindowCount: number;
+    global: Map<string, any>;
     constructor(WindowsWebview2UserDataFolder: string = path.join(process.env.LOCALAPPDATA || os.homedir(), 'NexfepDevelopment.webview2-data') ) {
         if (os.platform() === 'win32') {
             // 设置 WebView2 用户数据目录（仅 Windows 需要此配置）
@@ -86,7 +85,6 @@ class WindowPool {
                 fs.mkdirSync(userDataDir, { recursive: true });
             }
             process.env.WEBVIEW2_USER_DATA_FOLDER = userDataDir;
-            console.log('WebView2 user data folder:', userDataDir);
         }
         this.onCustomMessage = (window: Window, data: string) => {
             console.log('Get Custom Message:', data, "from window", window.id);
@@ -97,12 +95,12 @@ class WindowPool {
         this.windows = [];
         this.windowCount = 0;
         this.freeWindowCount = 0;
+        this.global = new Map();
     }
     async __injectCode(window: Window, code: string){
         await window.webview.evaluateScript(code);
     }
     async __injectControlFunctions(windowObj: Window) {
-        console.log("Create INJECT_CODE");
         const INJECT_CSS = `
         [nexfep-area-drag],
         [nexfep-area-drag] * {
@@ -206,6 +204,26 @@ class WindowPool {
             });
         }
         
+        window.setGlobal = (name, value) => {
+            const MessageBody = { type: 'NexfepSetGlobal', name: name, value: value }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+        }
+
+        window.getGlobal = (name) => {
+            const MessageBody = { type: 'NexfepGetGlobal', eventId: [${this.injectCount}, ++window.eventCount], name: name }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+            return new Promise((resolve, reject) => {
+                window.addEventListener("nexfep-get-global-result-"+${this.injectCount}+"-"+window.eventCount, (event) => {
+                    window.removeEventListener("nexfep-get-global-result-"+${this.injectCount}+"-"+window.eventCount, event);
+                    if(event.detail){
+                        resolve(event.detail);
+                    }else{
+                        resolve();
+                    }
+                });
+            });
+        }
+        
         // 注入 CSS 样式
         const style = document.createElement('style');
         style.textContent = \`${INJECT_CSS}\`;
@@ -217,9 +235,7 @@ class WindowPool {
         // 触发加载完成事件
         window.dispatchEvent(new Event('nexfep-load-done'));
         `
-        console.log("Before inject code INJECT_CODE");
         await this.__injectCode(windowObj, INJECT_CODE);
-        console.log("After inject control functions");
     }
     async __createNewWindowObj() {
         const window = this.app.createBrowserWindow({ title: "Nexfep" });
@@ -274,6 +290,13 @@ class WindowPool {
                         `);
                     }
                 });
+            } else if (dataObj.type == 'NexfepSetGlobal') {
+                this.global.set(dataObj.name, dataObj.value);
+            } else if (dataObj.type == 'NexfepGetGlobal') {
+                const value = this.global.get(dataObj.name);
+                webview.evaluateScript(`
+                    window.dispatchEvent(new Event('nexfep-get-global-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(value)} }));
+                `);
             }
         });
         return windowObj;

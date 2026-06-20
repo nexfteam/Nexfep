@@ -71,7 +71,7 @@ const win = await pool.createWindow(true, false);
 
 ### 窗口操作
 
-```typescript
+```javascript
 window.show();
 window.hide();
 window.maximize();
@@ -81,11 +81,9 @@ window.setTitle('新标题');
 window.openDevTools();
 ```
 
-### IPC 通信
+### 自定义消息
 
-框架在 WebView 页面加载完成后会自动注入一系列控制函数，建议使用这些注入的函数进行 IPC 通信，而非直接使用 `@webviewjs/webview` 原生包装的 IPC。
-
-#### 发送自定义消息
+#### 发送消息
 
 在页面中通过 `window.postMessage` 发送消息：
 
@@ -112,7 +110,9 @@ pool.onCustomMessage = (window, data) => {
 - `window` — 发送消息的窗口对象
 - `data` — 消息内容，为对象类型（JSON 序列化后会自动通过 `JSON.parse` 转换为对象）
 
-#### 触发自定义事件
+### 自定义事件
+
+#### 触发事件
 
 在页面中通过 `window.invoke` 触发事件：
 
@@ -155,7 +155,44 @@ pool.unhandle('hello', (data) => {
 - `event` — 事件名称，需要和触发事件时的事件名称一致
 - `callback` — 事件处理函数，需要和监听事件时的回调函数一致
 
-#### 窗口控制函数
+### 全局变量
+
+#### 设置变量
+
+在页面中通过 `window.setGlobal` 设置全局变量：
+
+```javascript
+window.setGlobal('hello', 'world');
+```
+
+**参数说明**
+
+- `name` — 全局变量名称
+- `value` — 全局变量值，任意类型的可序列化数据，会被序列化为 JSON 字符串后发送
+
+#### 获取变量
+
+在页面中通过 `window.getGlobal` 获取全局变量：
+
+```javascript
+const value = await window.getGlobal('hello');
+```
+
+**参数说明**
+
+- `name` — 全局变量名称
+
+#### 全局变量Map
+
+在主进程中通过 `WindowPool.global` 获取一个包含所有全局变量的 `Map<string, any>` 对象，可对其进行设置、获取等操作：
+
+```typescript
+const globals = pool.global;
+globals.set('hello', 'world');
+const value = globals.get('hello');
+```
+
+### 窗口控制函数
 
 页面中可直接调用以下注入函数进行窗口控制：
 
@@ -248,6 +285,7 @@ if (window.isNexfepLoadDone) {
 | `createWindow(isShow?, isDecorated?)` | `isShow`: boolean（默认 true）, `isDecorated`: boolean（默认 true） | Promise\<Window> | 创建并获取一个窗口                  |
 | `handle(event, callback)`             | `event`: string, `callback`: (data: string) => void | 无                | 监听指定事件，当收到事件时触发回调函数 |
 | `unhandle(event, callback)`                     | `event`: string, `callback`: (data: string) => void | 无                | 取消监听指定事件回调中的指定函数 |
+| `global`                              | /                                                                          | Map\<string, any> | 全局变量Map，类型为 `Map<string, any>`                         |
 | `closeWindow(window)`                 | `window`: Window                                            | Promise\<void>   | 关闭指定窗口并回收至池中               |
 | `closePool()`                         | 无                                                           | Promise\<void>   | 关闭窗口池，退出应用                 |
 | `mainloop()`                          | 无                                                           | void             | 启动应用主循环，阻塞直到应用退出           |
