@@ -117,13 +117,14 @@ pool.onCustomMessage = (window, data) => {
 Invoke events via `window.invoke` in the page:
 
 ```javascript
+window.invoke('hello');
 window.invoke('hello', 'world');
 ```
 
 **Parameters**
 
 - `event` — Event name
-- `data` — Any serializable data, will be serialized to JSON string before sending
+- `data` (optional) — Any serializable data, will be serialized to JSON string before sending
 
 #### Listen for Events
 
@@ -192,6 +193,59 @@ globals.set('hello', 'world');
 const value = globals.get('hello');
 ```
 
+### Inter-Window Communication
+
+The framework supports direct communication between windows via `window.broadcast` and `window.tell`, without going through the main process.
+
+#### Broadcast
+
+Send an event to all other open windows via `window.broadcast`:
+
+```javascript
+window.broadcast('user-login', { userId: 123 });
+```
+
+**Parameters**
+
+- `name` — Event name
+- `data` (optional) — Any serializable data, will be serialized to JSON string before sending
+
+Other windows listen for the broadcast event via `window.addEventListener`:
+
+```javascript
+window.addEventListener('user-login', (event) => {
+  console.log('User logged in:', event.detail);
+});
+```
+
+#### Tell
+
+Send a message to a specific window by its ID via `window.tell`:
+
+```javascript
+window.tell(2, 'custom-message', { text: 'Hello Window 2' });
+```
+
+**Parameters**
+
+- `to` — Target window ID (number)
+- `message` — Event name
+- `data` (optional) — Any serializable data, will be serialized to JSON string before sending
+
+The target window receives the message via `window.addEventListener`:
+
+```javascript
+window.addEventListener('custom-message', (event) => {
+  console.log('Received message:', event.detail);
+});
+```
+
+Each window's ID can be accessed via `window.id`:
+
+```javascript
+console.log('This window ID:', window.id);
+```
+
 ### Window Control Functions
 
 The following injected functions can be directly called in the page for window control:
@@ -205,6 +259,13 @@ window.unmaximize();         // Restore maximized window
 window.setTitle('Title');    // Set window title
 window.openDevTools();       // Open developer tools
 window.closeDevTools();      // Close developer tools
+```
+
+The following properties are also available in the page:
+
+```javascript
+console.log(window.id);                // Window unique identifier
+console.log(window.isNexfepLoadDone);  // Whether the window has finished loading
 ```
 
 ### Drag Regions

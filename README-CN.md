@@ -117,13 +117,14 @@ pool.onCustomMessage = (window, data) => {
 在页面中通过 `window.invoke` 触发事件：
 
 ```javascript
+window.invoke('hello');
 window.invoke('hello', 'world');
 ```
 
 **参数说明**
 
 - `event` — 事件名称
-- `data` — 任意类型的可序列化数据，会被序列化为 JSON 字符串后发送
+- `data`（可选）— 任意类型的可序列化数据，会被序列化为 JSON 字符串后发送
 
 #### 监听事件
 
@@ -192,6 +193,59 @@ globals.set('hello', 'world');
 const value = globals.get('hello');
 ```
 
+### 窗口间通信
+
+框架支持窗口之间通过 `window.broadcast` 和 `window.tell` 直接通信，无需经过主进程。
+
+#### 广播
+
+通过 `window.broadcast` 向所有其他打开的窗口发送事件：
+
+```javascript
+window.broadcast('user-login', { userId: 123 });
+```
+
+**参数说明**
+
+- `name` — 事件名称
+- `data`（可选）— 任意类型的可序列化数据，会被序列化为 JSON 字符串后发送
+
+其他窗口通过 `window.addEventListener` 监听广播事件：
+
+```javascript
+window.addEventListener('user-login', (event) => {
+  console.log('用户已登录:', event.detail);
+});
+```
+
+#### 定向发送
+
+通过 `window.tell` 向指定 ID 的窗口发送消息：
+
+```javascript
+window.tell(2, 'custom-message', { text: '你好，窗口2' });
+```
+
+**参数说明**
+
+- `to` — 目标窗口 ID（数字类型）
+- `message` — 事件名称
+- `data`（可选）— 任意类型的可序列化数据，会被序列化为 JSON 字符串后发送
+
+目标窗口通过 `window.addEventListener` 接收消息：
+
+```javascript
+window.addEventListener('custom-message', (event) => {
+  console.log('收到消息:', event.detail);
+});
+```
+
+每个窗口的 ID 可通过 `window.id` 获取：
+
+```javascript
+console.log('当前窗口 ID:', window.id);
+```
+
 ### 窗口控制函数
 
 页面中可直接调用以下注入函数进行窗口控制：
@@ -205,6 +259,13 @@ window.unmaximize();         // 还原最大化的窗口
 window.setTitle('标题');     // 设置窗口标题
 window.openDevTools();       // 打开开发者工具
 window.closeDevTools();      // 关闭开发者工具
+```
+
+页面中还可访问以下属性：
+
+```javascript
+console.log(window.id);               // 窗口唯一标识
+console.log(window.isNexfepLoadDone); // 窗口是否已加载完成
 ```
 
 ### 拖拽区域

@@ -189,7 +189,7 @@ class WindowPool {
 
         window.eventCount = 0;
 
-        window.invoke = async (event, data) => {
+        window.invoke = async (event, data = null) => {
             const MessageBody = { type: 'NexfepInvoke', eventId: [${this.injectCount}, ++window.eventCount], event: event, data: data }
             window.ipc.postMessage(JSON.stringify(MessageBody));
             return new Promise((resolve, reject) => {
@@ -223,6 +223,18 @@ class WindowPool {
                 });
             });
         }
+
+        window.broadcast = (name, data = null) => {
+            const MessageBody = { type: 'NexfepBroadcast', name: name, data: data }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+        }
+
+        window.id = ${windowObj.id};
+
+        window.tell = (to, message, data = null) => {
+            const MessageBody = { type: 'NexfepTell', to: to, message: message, data: data }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+        }
         
         // 注入 CSS 样式
         const style = document.createElement('style');
@@ -233,7 +245,7 @@ class WindowPool {
         window.isNexfepLoadDone = true;
 
         // 触发加载完成事件
-        window.dispatchEvent(new Event('nexfep-load-done'));
+        window.dispatchEvent(new CustomEvent('nexfep-load-done'));
         `
         await this.__injectCode(windowObj, INJECT_CODE);
     }
@@ -282,11 +294,11 @@ class WindowPool {
                     const result = await handler(dataObj.data);
                     if(result){
                         webview.evaluateScript(`
-                            window.dispatchEvent(new Event('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(result)} }));
+                            window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(result)} }));
                         `);
                     }else{
                         webview.evaluateScript(`
-                            window.dispatchEvent(new Event('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: undefined }));
+                            window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: undefined }));
                         `);
                     }
                 });
@@ -295,8 +307,24 @@ class WindowPool {
             } else if (dataObj.type == 'NexfepGetGlobal') {
                 const value = this.global.get(dataObj.name);
                 webview.evaluateScript(`
-                    window.dispatchEvent(new Event('nexfep-get-global-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(value)} }));
+                    window.dispatchEvent(new CustomEvent('nexfep-get-global-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(value)} }));
                 `);
+            } else if (dataObj.type == 'NexfepBroadcast') {
+                this.windows.forEach(async w => {
+                    if(w != windowObj && w.isOpen){
+                        w.webview.evaluateScript(`
+                            window.dispatchEvent(new CustomEvent('${dataObj.name}', { detail: ${JSON.stringify(dataObj.data)} }));
+                        `);
+                    }
+                })
+            } else if (dataObj.type == 'NexfepTell') {
+                this.windows.forEach(async w => {
+                    if(w.id == dataObj.to){
+                        w.webview.evaluateScript(`
+                            window.dispatchEvent(new CustomEvent('${dataObj.message}', { detail: ${JSON.stringify(dataObj.data)} }));
+                        `);
+                    }
+                })
             }
         });
         return windowObj;
