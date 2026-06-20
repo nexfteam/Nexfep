@@ -1,6 +1,6 @@
 # Nexfep
 
-语言: [English](https://github.com/zhuxiaojt/Nexfep/blob/main/README.md) | 简体中文(当前)
+语言: [English](https://github.com/nexfteam/Nexfep/blob/main/README.md) | 简体中文(当前)
 
 基于 @webviewjs/webview 的桌面应用框架
 
@@ -12,7 +12,7 @@
 
 ## 简介
 
-Nexfep 是一个基于 [@webviewjs/webview](https://github.com/webview/webview) 构建的桌面应用框架，使用 TypeScript 编写。它旨在为开发者提供一套简洁、高效的工具链，用于构建跨平台桌面应用。
+Nexfep 是一个基于 [@webviewjs/webview](https://github.com/webviewjs/webview) 构建的桌面应用框架，使用 TypeScript 编写。它旨在为开发者提供一套简洁、高效的工具链，用于构建跨平台桌面应用。
 
 框架采用窗口池管理机制，支持多窗口应用场景，如代码编辑器、聊天工具、仪表盘等。
 

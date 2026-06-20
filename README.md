@@ -1,6 +1,6 @@
 # Nexfep
 
-Language: English(now) | [简体中文](https://github.com/zhuxiaojt/Nexfep/blob/main/README-CN.md)
+Language: English(now) | [简体中文](https://github.com/nexfteam/Nexfep/blob/main/README-CN.md)
 
 A desktop application framework based on @webviewjs/webview
 
@@ -12,7 +12,7 @@ This project is currently in early development, with many core capabilities for 
 
 ## Introduction
 
-Nexfep is a desktop application framework built on [@webviewjs/webview](https://github.com/webview/webview), written in TypeScript. It aims to provide developers with a concise and efficient toolchain for building cross-platform desktop applications.
+Nexfep is a desktop application framework built on [@webviewjs/webview](https://github.com/webviewjs/webview), written in TypeScript. It aims to provide developers with a concise and efficient toolchain for building cross-platform desktop applications.
 
 The framework uses a window pool management mechanism, supporting multi-window application scenarios such as code editors, chat tools, dashboards, etc.
 

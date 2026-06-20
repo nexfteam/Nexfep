@@ -7,3 +7,7 @@ test.ts
 test.js
 pnpm-lock.yaml
 tsconfig.json
+.vscode/
+.trae/
+.trae-cn/
+.idea/

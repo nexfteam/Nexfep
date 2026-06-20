@@ -4,3 +4,7 @@ index.js
 test.ts
 test.js
 pnpm-lock.yaml
+.vscode/
+.trae/
+.trae-cn/
+.idea/
