@@ -14,7 +14,7 @@
     "webview",
     "typescript"
   ],
-  "version": "0.1.5",
+  "version": "0.1.6",
   "type": "module",
   "main": "./index.js",
   "scripts": {
@@ -31,7 +31,9 @@
     "README.md",
     "README-CN.md",
     "LICENSE",
-    "package.json"
+    "package.json",
+    "src/WindowManager.js",
+    "src/WindowManager.d.ts"
   ],
   "dependencies": {
     "@webviewjs/webview": "0.1.4"
