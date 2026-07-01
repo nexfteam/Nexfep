@@ -33,29 +33,117 @@ pnpm add nexfep
 ## Quick Start
 
 ```typescript
-import { WindowPool } from 'nexfep';
+import { Application } from 'nexfep';
 
-const pool = new WindowPool();
+const app = new Application();
 
-const window = await pool.createWindow(true, false);
+const window = await app.windows.createWindow(true, false);
 
 await window.loadHTML('<h1 nexfep-area-drag>Hello Nexfep!</h1>');
-
-pool.mainloop();
 ```
 
 ## Usage Guide
+
+### Application
+
+`Application` is the main entry point of the framework, responsible for managing the application lifecycle and providing access to windows and system tray.
+
+```typescript
+import { Application } from 'nexfep';
+
+const app = new Application();
+// or with custom WebView2 user data directory (Windows only)
+const app = new Application('C:\\custom\\webview2-data');
+```
+
+**Properties**
+
+- `windows` — The `WindowPool` instance for managing browser windows
+- `utils` — Utility methods (e.g., desktop notifications)
+
+**Methods**
+
+- `createTray(options)` — Create a system tray icon with context menu
+- `exit()` — Exit the application
+
+### Tray
+
+Create and manage system tray icons with context menus via `app.createTray()`.
+
+```typescript
+import { readFileSync } from 'fs';
+
+const tray = app.createTray({
+  id: 'my-tray',
+  tooltip: 'My App',
+  icon: {
+    data: readFileSync('./icon.png'),
+    width: 32,
+    height: 32,
+  },
+  menuItems: [
+    { id: 'show', label: 'Show Window' },
+    { id: 'quit', label: 'Quit' },
+  ],
+});
+```
+
+The `icon` field accepts a `TrayIconImage` object:
+
+```typescript
+interface TrayIconImage {
+  data: Buffer;      // Image binary data
+  width?: number;    // Optional width
+  height?: number;   // Optional height
+}
+```
+
+**Methods**
+
+| Method                                      | Description                         |
+|---------------------------------------------|-------------------------------------|
+| `addMenuItem(item)`                         | Add a menu item                     |
+| `removeMenuItem(id)`                        | Remove a menu item by ID            |
+| `setMenuItems(items)`                       | Replace all menu items              |
+| `setIcon(icon, width?, height?)`            | Change the tray icon (raw pixel data as `Uint8Array` / `number[]`) |
+| `setTooltip(tooltip)`                       | Change the tooltip text             |
+| `on(event, callback)`                       | Listen for tray events (e.g. `'click'`) |
+| `show()`                                    | Show the tray icon                  |
+| `hide()`                                    | Hide the tray icon                  |
+| `destroy()`                                 | Destroy the tray icon               |
+
+```typescript
+tray.on('click', () => {
+  console.log('Tray clicked');
+});
+tray.addMenuItem({ id: 'about', label: 'About' });
+tray.setTooltip('Nexfep App');
+```
+
+### Notifications
+
+Send desktop notifications via `app.utils.notify()`.
+
+```typescript
+const notification = app.utils.notify('Title', 'Notification body');
+```
+
+**Parameters**
+
+- `title` — Notification title
+- `body` (optional) — Notification body text
 
 ### Window Pool
 
 `WindowPool` is the core management class of the framework, responsible for window creation and recycling.
 
 ```typescript
-const pool = new WindowPool();
+const pool = app.windows;
 ```
 
 **Constructor Parameters**
 
+- `app` — The `Application` instance
 - `WindowsWebview2UserDataFolder` (optional) — WebView2 user data directory, defaults to `%LOCALAPPDATA%\NexfepDevelopment.webview2-data`
 
 ### Window Creation
@@ -348,8 +436,6 @@ if (window.isNexfepLoadDone) {
 | `unhandle(event, callback)`           | `event`: string, `callback`: (data: string) => void                        | None             | Removes the specified callback from the event listener                     |
 | `global`                              | /                                                                          | Map\<string, any> | A global variable map of type: `Map<string, any>`                         |
 | `closeWindow(window)`                 | `window`: Window                                                           | Promise\<void>   | Closes the specified window and returns it to the pool                   |
-| `closePool()`                         | None                                                                       | Promise\<void>   | Closes the window pool and exits the application                         |
-| `mainloop()`                          | None                                                                       | void             | Starts the application main loop, blocking until the application exits   |
 | `onCustomMessage`                     | `(window: Window, data: string) => void`                                   | None             | Custom message callback, triggered when receiving custom messages from pages |
 
 ### Window
@@ -368,6 +454,7 @@ if (window.isNexfepLoadDone) {
 | `setTitle(title)`                     | `title`: string — Window title              | void             | Sets the window title                   |
 | `setDecorated(isDecorated)`           | `isDecorated`: boolean — Use system decorations | void          | Sets whether the window has borders and title bar |
 | `resizable(resizable)`                | `resizable`: boolean — Resizable            | void             | Sets whether the window is resizable     |
+| `setSize(width, height)`              | `width`: number, `height`: number           | void             | Sets the window size in pixels           |
 | `openDevTools()`                      | None                                        | void             | Opens developer tools                   |
 | `closeDevTools()`                     | None                                        | void             | Closes developer tools                  |
 | `id`                                  | None                                        | number           | Unique window identifier, auto-incrementing |

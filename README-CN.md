@@ -33,29 +33,117 @@ pnpm add nexfep
 ## 快速开始
 
 ```typescript
-import { WindowPool } from 'nexfep';
+import { Application } from 'nexfep';
 
-const pool = new WindowPool();
+const app = new Application();
 
-const window = await pool.createWindow(true, false);
+const window = await app.windows.createWindow(true, false);
 
 await window.loadHTML('<h1 nexfep-area-drag>Hello Nexfep!</h1>');
-
-pool.mainloop();
 ```
 
 ## 使用指南
+
+### Application
+
+`Application` 是框架的主入口，负责管理应用生命周期，提供窗口和系统托盘的访问。
+
+```typescript
+import { Application } from 'nexfep';
+
+const app = new Application();
+// 或指定自定义 WebView2 用户数据目录（仅 Windows）
+const app = new Application('C:\\custom\\webview2-data');
+```
+
+**属性**
+
+- `windows` — `WindowPool` 实例，用于管理浏览器窗口
+- `utils` — 工具方法（如桌面通知）
+
+**方法**
+
+- `createTray(options)` — 创建系统托盘图标和右键菜单
+- `exit()` — 退出应用
+
+### 托盘图标
+
+通过 `app.createTray()` 创建和管理系统托盘图标及右键菜单。
+
+```typescript
+import { readFileSync } from 'fs';
+
+const tray = app.createTray({
+  id: 'my-tray',
+  tooltip: '我的应用',
+  icon: {
+    data: readFileSync('./icon.png'),
+    width: 32,
+    height: 32,
+  },
+  menuItems: [
+    { id: 'show', label: '显示窗口' },
+    { id: 'quit', label: '退出' },
+  ],
+});
+```
+
+`icon` 字段接受 `TrayIconImage` 对象：
+
+```typescript
+interface TrayIconImage {
+  data: Buffer;      // 图片二进制数据
+  width?: number;    // 可选宽度
+  height?: number;   // 可选高度
+}
+```
+
+**方法**
+
+| 方法                                         | 描述               |
+|---------------------------------------------|--------------------|
+| `addMenuItem(item)`                         | 添加菜单项          |
+| `removeMenuItem(id)`                        | 按 ID 删除菜单项    |
+| `setMenuItems(items)`                       | 替换所有菜单项      |
+| `setIcon(icon, width?, height?)`            | 更改托盘图标（原始像素数据 `Uint8Array` / `number[]`） |
+| `setTooltip(tooltip)`                       | 更改悬停提示文本    |
+| `on(event, callback)`                       | 监听托盘事件（如 `'click'`） |
+| `show()`                                    | 显示托盘图标        |
+| `hide()`                                    | 隐藏托盘图标        |
+| `destroy()`                                 | 销毁托盘图标        |
+
+```typescript
+tray.on('click', () => {
+  console.log('托盘被点击');
+});
+tray.addMenuItem({ id: 'about', label: '关于' });
+tray.setTooltip('Nexfep 应用');
+```
+
+### 桌面通知
+
+通过 `app.utils.notify()` 发送桌面通知。
+
+```typescript
+const notification = app.utils.notify('标题', '通知内容');
+```
+
+**参数**
+
+- `title` — 通知标题
+- `body`（可选）— 通知正文
 
 ### 窗口池
 
 `WindowPool` 是框架的核心管理类，负责窗口的创建和回收。
 
 ```typescript
-const pool = new WindowPool();
+const pool = app.windows;
 ```
 
 **构造函数参数**
 
+- `app` — `Application` 实例
 - `WindowsWebview2UserDataFolder`（可选）— WebView2 用户数据目录，默认为 `%LOCALAPPDATA%\NexfepDevelopment.webview2-data`
 
 ### 窗口创建
@@ -348,8 +436,6 @@ if (window.isNexfepLoadDone) {
 | `unhandle(event, callback)`                     | `event`: string, `callback`: (data: string) => void | 无                | 取消监听指定事件回调中的指定函数 |
 | `global`                              | /                                                                          | Map\<string, any> | 全局变量Map，类型为 `Map<string, any>`                         |
 | `closeWindow(window)`                 | `window`: Window                                            | Promise\<void>   | 关闭指定窗口并回收至池中               |
-| `closePool()`                         | 无                                                           | Promise\<void>   | 关闭窗口池，退出应用                 |
-| `mainloop()`                          | 无                                                           | void             | 启动应用主循环，阻塞直到应用退出           |
 | `onCustomMessage`                     | `(window: Window, data: string) => void`                    | 无                | 自定义消息回调函数，当收到页面发来的自定义消息时触发 |
 
 ### Window
@@ -368,6 +454,7 @@ if (window.isNexfepLoadDone) {
 | `setTitle(title)`           | `title`: string — 窗口标题            | void           | 设置窗口标题        |
 | `setDecorated(isDecorated)` | `isDecorated`: boolean — 是否使用系统装饰 | void           | 设置窗口是否带边框和标题栏 |
 | `resizable(resizable)`      | `resizable`: boolean — 是否可调整大小    | void           | 设置窗口是否可调整大小   |
+| `setSize(width, height)`    | `width`: number, `height`: number  | void           | 设置窗口尺寸（像素）   |
 | `openDevTools()`            | 无                                 | void           | 打开开发者工具       |
 | `closeDevTools()`           | 无                                 | void           | 关闭开发者工具       |
 | `id`                        | 无                                 | number         | 窗口唯一标识，自增编号   |
