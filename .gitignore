@@ -1,7 +1,9 @@
 node_modules/
 test/
 index.js
+index.d.ts
 src/**/*.js
+src/**/*.d.ts
 test.ts
 test.js
 pnpm-lock.yaml

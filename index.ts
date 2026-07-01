@@ -1,1 +1,1 @@
-export * from './src/WindowManager.js';
+export * from './src/Application.js';

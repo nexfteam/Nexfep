@@ -48,6 +48,9 @@ class Window {
     closeDevTools(){
         this.webview.closeDevtools();
     }
+    setSize(width: number, height: number){
+        this.window.setSize(width, height);
+    }
     hide(){
         this.window.hide();
         this.isShow = false;
@@ -70,14 +73,14 @@ class Window {
 }
 class WindowPool {
     onCustomMessage: (window: Window, data: string) => void;
-    private app: Application;
+    app: Application;
     private windows: Window[];
     private handlers: Map<string, Array<(data: any) => any>>;
     private injectCount: number;
     private windowCount: number;
     private freeWindowCount: number;
     global: Map<string, any>;
-    constructor(WindowsWebview2UserDataFolder: string = path.join(process.env.LOCALAPPDATA || os.homedir(), 'NexfepDevelopment.webview2-data') ) {
+    constructor(app: Application, WindowsWebview2UserDataFolder: string = path.join(process.env.LOCALAPPDATA || os.homedir(), 'NexfepDevelopment.webview2-data') ) {
         if (os.platform() === 'win32') {
             // 设置 WebView2 用户数据目录（仅 Windows 需要此配置）
             const userDataDir = WindowsWebview2UserDataFolder;
@@ -90,7 +93,7 @@ class WindowPool {
             console.log('Get Custom Message:', data, "from window", window.id);
         };
         this.handlers = new Map();
-        this.app = new Application();
+        this.app = app;
         this.injectCount = 0;
         this.windows = [];
         this.windowCount = 0;
@@ -357,17 +360,11 @@ class WindowPool {
             throw new Error("Window is not open");
         }
     }
-    async closePool(){
-        this.app.exit();
-    }
     async handle(event: string, callback: (data: any) => any){
         this.handlers.set(event, [...this.handlers.get(event) || [], callback]);
     }
     async unhandle(event: string, callback: (data: any) => any){
         this.handlers.set(event, (this.handlers.get(event) || []).filter(c => c !== callback));
-    }
-    mainloop(){
-        this.app.run();
     }
 }
 
