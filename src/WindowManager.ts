@@ -1,4 +1,5 @@
 import { Application, BrowserWindow, Webview } from "@webviewjs/webview";
+import { Logger } from "./Logger.js";
 import os from 'os';
 import path from 'path';
 import fs from 'fs';
@@ -74,16 +75,17 @@ class Window {
 class WindowPool {
     onCustomMessage: (window: Window, data: string) => void;
     app: Application;
+    logger: Logger;
     private windows: Window[];
     private handlers: Map<string, Array<(data: any) => any>>;
     private injectCount: number;
     private windowCount: number;
     private freeWindowCount: number;
     global: Map<string, any>;
-    constructor(app: Application, WindowsWebview2UserDataFolder: string = path.join(process.env.LOCALAPPDATA || os.homedir(), 'NexfepDevelopment.webview2-data') ) {
+    constructor(app: Application, options: { WindowsWebview2UserDataFolder?: string, logger?: Logger }) {
         if (os.platform() === 'win32') {
             // 设置 WebView2 用户数据目录（仅 Windows 需要此配置）
-            const userDataDir = WindowsWebview2UserDataFolder;
+            const userDataDir: string = options.WindowsWebview2UserDataFolder || path.join(process.env.LOCALAPPDATA || os.homedir(), 'NexfepDevelopment.webview2-data') ;
             if (!fs.existsSync(userDataDir)) {
                 fs.mkdirSync(userDataDir, { recursive: true });
             }
@@ -99,6 +101,7 @@ class WindowPool {
         this.windowCount = 0;
         this.freeWindowCount = 0;
         this.global = new Map();
+        this.logger = options.logger || new Logger();
     }
     async __injectCode(window: Window, code: string){
         await window.webview.evaluateScript(code);
@@ -238,6 +241,37 @@ class WindowPool {
             const MessageBody = { type: 'NexfepTell', to: to, message: message, data: data }
             window.ipc.postMessage(JSON.stringify(MessageBody));
         }
+
+        window.__originConsoleLog = console.log;
+        window.__originConsoleError = console.error;
+        window.__originConsoleInfo = console.info;
+        window.__originConsoleWarn = console.warn;
+        window.__originConsoleDebug = console.debug;
+        console.log = (...args) => {
+            const MessageBody = { type: 'NexfepConsoleLog', message: args }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+            window.__originConsoleLog(...args);
+        }
+        console.error = (...args) => {
+            const MessageBody = { type: 'NexfepConsoleError', message: args }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+            window.__originConsoleError(...args);
+        }
+        console.info = (...args) => {
+            const MessageBody = { type: 'NexfepConsoleInfo', message: args }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+            window.__originConsoleInfo(...args);
+        }
+        console.warn = (...args) => {
+            const MessageBody = { type: 'NexfepConsoleWarn', message: args }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+            window.__originConsoleWarn(...args);
+        }
+        console.debug = (...args) => {
+            const MessageBody = { type: 'NexfepConsoleDebug', message: args }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+            window.__originConsoleDebug(...args);
+        }
         
         // 注入 CSS 样式
         const style = document.createElement('style');
@@ -328,6 +362,16 @@ class WindowPool {
                         `);
                     }
                 })
+            } else if (dataObj.type == 'NexfepConsoleLog') {
+                this.logger.__printLog(windowObj.id, 'Log', dataObj.message);
+            } else if (dataObj.type == 'NexfepConsoleError') {
+                this.logger.__printLog(windowObj.id, 'Error', dataObj.message, '\x1b[31m', '\x1b[0m');
+            } else if (dataObj.type == 'NexfepConsoleInfo') {
+                this.logger.__printLog(windowObj.id, 'Info', dataObj.message, '\x1b[34m', '\x1b[0m');
+            } else if (dataObj.type == 'NexfepConsoleWarn') {
+                this.logger.__printLog(windowObj.id, 'Warn', dataObj.message, '\x1b[33m', '\x1b[0m');
+            } else if (dataObj.type == 'NexfepConsoleDebug') {
+                this.logger.__printLog(windowObj.id, 'Debug', dataObj.message, '\x1b[90m', '\x1b[0m');
             }
         });
         return windowObj;

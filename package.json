@@ -6,6 +6,9 @@
   "bugs": {
     "url": "https://github.com/nexfteam/Nexfep/issues"
   },
+  "bin": {
+    "nexfep": "cli/index.mjs"
+  },
   "keywords": [
     "desktop",
     "application",
@@ -14,7 +17,7 @@
     "webview",
     "typescript"
   ],
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "main": "./index.js",
   "scripts": {

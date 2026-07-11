@@ -22,6 +22,10 @@ Nexfep 是一个基于 [@webviewjs/webview](https://github.com/webviewjs/webview
 - **IPC 通信** — 支持主进程与 WebView 之间的双向消息通信，通过注入的函数进行调用
 - **窗口控制** — 提供最大化、最小化、关闭、标题设置、开发者工具等完整窗口操作 API
 - **拖拽区域** — 内置 HTML 属性支持，方便定义窗口拖拽区域（`nexfep-area-drag` 等）
+- **系统托盘** — 创建和管理系统托盘图标及右键菜单
+- **桌面通知** — 通过 `app.utils.notify()` 发送桌面通知
+- **日志系统** — 内置 Logger，支持文件日志和彩色控制台输出，自动拦截页面 console 消息
+- **CLI 构建工具** — 通过 `nexfep build` 将应用打包为独立可执行文件
 - **TypeScript 支持** — 完整的类型定义，开发体验优秀
 
 ## 安装
@@ -46,25 +50,63 @@ await window.loadHTML('<h1 nexfep-area-drag>Hello Nexfep!</h1>');
 
 ### Application
 
-`Application` 是框架的主入口，负责管理应用生命周期，提供窗口和系统托盘的访问。
+`Application` 是框架的主入口，负责管理应用生命周期，提供窗口、系统托盘和日志的访问。
 
 ```typescript
 import { Application } from 'nexfep';
 
 const app = new Application();
-// 或指定自定义 WebView2 用户数据目录（仅 Windows）
-const app = new Application('C:\\custom\\webview2-data');
+// 或指定自定义 WebView2 用户数据目录（仅 Windows 生效）
+const app = new Application({ WindowsWebview2UserDataFolder: 'C:\\custom\\webview2-data' });
+// 或指定日志文件路径
+const app = new Application({ LogFilePath: './app.log' });
 ```
+
+**构造函数参数**
+
+| 选项 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `WindowsWebview2UserDataFolder` | `string`（可选） | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 用户数据目录（仅 Windows） |
+| `LogFilePath` | `string`（可选） | 无 | 日志文件输出路径 |
 
 **属性**
 
 - `windows` — `WindowPool` 实例，用于管理浏览器窗口
 - `utils` — 工具方法（如桌面通知）
+- `logger` — `Logger` 实例，用于日志记录
 
 **方法**
 
 - `createTray(options)` — 创建系统托盘图标和右键菜单
 - `exit()` — 退出应用
+
+### Logger
+
+Logger 支持文件输出和彩色控制台输出，可通过 `app.logger` 访问。
+
+```typescript
+app.logger.log('Hello World');
+app.logger.error('发生错误');
+app.logger.warn('警告信息');
+app.logger.info('提示信息');
+app.logger.debug('调试信息');
+```
+
+**方法**
+
+| 方法 | 说明 |
+|------|------|
+| `log(message)` | 记录日志 |
+| `error(message)` | 记录错误日志（红色） |
+| `warn(message)` | 记录警告日志（黄色） |
+| `info(message)` | 记录提示日志（蓝色） |
+| `debug(message)` | 记录调试日志（灰色） |
+
+每个方法接受字符串或字符串数组作为参数。
+
+**页面 Console 拦截**
+
+页面中的 `console.log`、`console.error`、`console.info`、`console.warn`、`console.debug` 调用会被自动拦截并转发到主进程 Logger，输出中包含来源窗口的 ID。
 
 ### 托盘图标
 
@@ -141,11 +183,6 @@ const notification = app.utils.notify('标题', '通知内容');
 const pool = app.windows;
 ```
 
-**构造函数参数**
-
-- `app` — `Application` 实例
-- `WindowsWebview2UserDataFolder`（可选）— WebView2 用户数据目录，默认为 `%LOCALAPPDATA%\NexfepDevelopment.webview2-data`
-
 ### 窗口创建
 
 ```typescript
@@ -166,6 +203,7 @@ window.maximize();
 window.minimize();
 window.close();
 window.setTitle('新标题');
+window.setSize(800, 600);
 window.openDevTools();
 ```
 
@@ -271,9 +309,9 @@ const value = await window.getGlobal('hello');
 
 - `name` — 全局变量名称
 
-#### 全局变量Map
+#### 全局变量 Map
 
-在主进程中通过 `WindowPool.global` 获取一个包含所有全局变量的 `Map<string, any>` 对象，可对其进行设置、获取等操作：
+在主进程中通过 `pool.global` 获取一个包含所有全局变量的 `Map<string, any>` 对象，可对其进行设置、获取等操作：
 
 ```typescript
 const globals = pool.global;
@@ -424,40 +462,94 @@ if (window.isNexfepLoadDone) {
 }
 ```
 
+## CLI
+
+Nexfep 提供命令行工具，用于将应用打包为独立可执行文件。
+
+### 用法
+
+```bash
+npx nexfep build [options]
+```
+
+### 选项
+
+| 选项 | 说明 |
+|------|------|
+| `-n, --name <name>` | 应用名称（默认：来自 package.json） |
+| `-e, --entry <file>` | 入口文件路径（默认：来自 package.json main） |
+| `-o, --output <dir>` | 输出目录（默认：dist） |
+| `-i, --ignore <pattern>` | 要忽略的文件或目录（可多次使用） |
+| `-c, --console` | 在 Windows 上显示控制台窗口（默认：false） |
+| `-r, --reinstall` | 构建前仅重新安装生产依赖 |
+| `-s, --skip-clean` | 跳过清理旧的构建文件 |
+| `-u, --upx <level>` | 使用 UPX 压缩可执行文件，级别 0-9（默认：0） |
+
+### 示例
+
+```bash
+# 使用 package.json 默认配置构建
+nexfep build
+
+# 设置自定义应用名称和入口文件
+nexfep build -n my-app -e ./src/index.js
+
+# 设置自定义输出目录
+nexfep build -o ./build
+
+# 忽略多个模式
+nexfep build -i node_modules -i test -i temp
+
+# 使用 UPX 压缩构建
+nexfep build -u 7
+```
+
+该命令使用 [nexfpack](https://github.com/nexfteam/Nexfpack) 将应用打包为独立可执行文件。
+
 ## API
+
+### Application
+
+| 方法/属性 | 参数 | 返回值 | 说明 |
+|-----------|------|--------|------|
+| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath? }` | Application | 创建应用实例 |
+| `windows` | / | WindowPool | 窗口池实例 |
+| `utils` | / | \_\_Utils | 工具方法（通知） |
+| `logger` | / | Logger | 日志实例 |
+| `createTray(options)` | 见 Tray 章节 | Tray | 创建系统托盘图标 |
+| `exit()` | 无 | void | 退出应用 |
 
 ### WindowPool
 
-| 方法/属性                                 | 参数                                                          | 返回值              | 说明                         |
-| ------------------------------------- | ----------------------------------------------------------- | ---------------- | -------------------------- |
-| `constructor(userDataFolder?)`        | `userDataFolder`: string（可选）                                | WindowPool       | 创建窗口池，可选指定 WebView2 用户数据目录 |
-| `createWindow(isShow?, isDecorated?)` | `isShow`: boolean（默认 true）, `isDecorated`: boolean（默认 true） | Promise\<Window> | 创建并获取一个窗口                  |
-| `handle(event, callback)`             | `event`: string, `callback`: (data: string) => void | 无                | 监听指定事件，当收到事件时触发回调函数 |
-| `unhandle(event, callback)`                     | `event`: string, `callback`: (data: string) => void | 无                | 取消监听指定事件回调中的指定函数 |
-| `global`                              | /                                                                          | Map\<string, any> | 全局变量Map，类型为 `Map<string, any>`                         |
-| `closeWindow(window)`                 | `window`: Window                                            | Promise\<void>   | 关闭指定窗口并回收至池中               |
-| `onCustomMessage`                     | `(window: Window, data: string) => void`                    | 无                | 自定义消息回调函数，当收到页面发来的自定义消息时触发 |
+| 方法/属性 | 参数 | 返回值 | 说明 |
+|-----------|------|--------|------|
+| `createWindow(isShow?, isDecorated?)` | `isShow`: boolean（默认 true）, `isDecorated`: boolean（默认 true） | Promise\<Window> | 创建并获取一个窗口 |
+| `handle(event, callback)` | `event`: string, `callback`: (data: any) => any | 无 | 监听指定事件 |
+| `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any | 无 | 取消监听指定事件 |
+| `global` | / | Map\<string, any> | 全局变量 Map |
+| `closeWindow(window)` | `window`: Window | Promise\<void> | 关闭指定窗口并回收至池中 |
+| `onCustomMessage` | `(window: Window, data: string) => void` | 无 | 自定义消息回调函数 |
 
 ### Window
 
-| 方法/属性                       | 参数                                | 返回值            | 说明            |
-| --------------------------- | --------------------------------- | -------------- | ------------- |
-| `loadURL(url)`              | `url`: string — 要加载的网页地址          | Promise\<void> | 加载指定 URL      |
-| `loadHTML(html)`            | `html`: string — HTML 字符串         | Promise\<void> | 加载指定 HTML 内容  |
-| `show()`                    | 无                                 | void           | 显示窗口          |
-| `hide()`                    | 无                                 | void           | 隐藏窗口          |
-| `maximize()`                | 无                                 | void           | 最大化窗口         |
-| `unMaximize()`              | 无                                 | void           | 还原窗口（取消最大化）   |
-| `minimize()`                | 无                                 | void           | 最小化窗口         |
-| `unMinimize()`              | 无                                 | void           | 还原窗口（取消最小化）   |
-| `close()`                   | 无                                 | void           | 关闭窗口并回收至池中    |
-| `setTitle(title)`           | `title`: string — 窗口标题            | void           | 设置窗口标题        |
-| `setDecorated(isDecorated)` | `isDecorated`: boolean — 是否使用系统装饰 | void           | 设置窗口是否带边框和标题栏 |
-| `resizable(resizable)`      | `resizable`: boolean — 是否可调整大小    | void           | 设置窗口是否可调整大小   |
-| `setSize(width, height)`    | `width`: number, `height`: number  | void           | 设置窗口尺寸（像素）   |
-| `openDevTools()`            | 无                                 | void           | 打开开发者工具       |
-| `closeDevTools()`           | 无                                 | void           | 关闭开发者工具       |
-| `id`                        | 无                                 | number         | 窗口唯一标识，自增编号   |
+| 方法/属性 | 参数 | 返回值 | 说明 |
+|-----------|------|--------|------|
+| `loadURL(url)` | `url`: string — 要加载的网页地址 | Promise\<void> | 加载指定 URL |
+| `loadHTML(html)` | `html`: string — HTML 字符串 | Promise\<void> | 加载指定 HTML 内容 |
+| `show()` | 无 | void | 显示窗口 |
+| `hide()` | 无 | void | 隐藏窗口 |
+| `maximize()` | 无 | void | 最大化窗口 |
+| `unMaximize()` | 无 | void | 还原窗口（取消最大化） |
+| `minimize()` | 无 | void | 最小化窗口 |
+| `unMinimize()` | 无 | void | 还原窗口（取消最小化） |
+| `close()` | 无 | void | 关闭窗口并回收至池中 |
+| `setTitle(title)` | `title`: string | void | 设置窗口标题 |
+| `setDecorated(isDecorated)` | `isDecorated`: boolean | void | 设置窗口是否带边框和标题栏 |
+| `resizable(resizable)` | `resizable`: boolean | void | 设置窗口是否可调整大小 |
+| `setSize(width, height)` | `width`: number, `height`: number | void | 设置窗口尺寸（像素） |
+| `openDevTools()` | 无 | void | 打开开发者工具 |
+| `closeDevTools()` | 无 | void | 关闭开发者工具 |
+| `id` | 无 | number | 窗口唯一标识，自增编号 |
 
 ## 开发
 

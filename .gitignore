@@ -4,11 +4,13 @@ index.js
 index.d.ts
 src/**/*.js
 src/**/*.d.ts
-test.ts
-test.js
+test.*
+package-lock.json
 pnpm-lock.yaml
 pnpm-workspace.yaml
 .vscode/
 .trae/
 .trae-cn/
 .idea/
+dist/
+.nexfpack-temp/
