@@ -286,95 +286,99 @@ class WindowPool {
         `
         await this.__injectCode(windowObj, INJECT_CODE);
     }
-    async __createNewWindowObj() {
-        const window = this.app.createBrowserWindow({ title: "Nexfep" });
-        window.hide();
-        this.freeWindowCount++;
-        const webview = window.createWebview();
-        const windowObj = new Window(window, webview, ++this.windowCount, this);
-        this.windows.push(windowObj);
-        webview.onIpcMessage((data) => {
-            const dataText = data.body.toString();
-            const dataObj = JSON.parse(dataText);
-            if (dataObj.type == 'NexfepBeforeUnload') {
-                webview.evaluateScript(
-                `if(window?.isNexfepLoadDone){
-                    const MessageBody = { type: 'NexfepBeforeUnload' }
-                    window.ipc.postMessage(JSON.stringify(MessageBody));
-                }else{
-                    const MessageBody = { type: 'NexfepLoadFalse' }
-                    window.ipc.postMessage(JSON.stringify(MessageBody));
-                }`)
-            } else if (dataObj.type == 'NexfepLoadFalse') {
-                this.__injectControlFunctions(windowObj);
-            } else if (dataObj.type == 'NexfepCloseWindow') {
-                this.closeWindow(windowObj);
-            } else if (dataObj.type == 'NexfepMinimizeWindow') {
-                window.setMinimized(true);
-            } else if (dataObj.type == 'NexfepUnMinimizeWindow') {
-                window.setMinimized(false);
-            } else if (dataObj.type == 'NexfepMaximizeWindow') {
-                window.setMaximized(true);
-            } else if (dataObj.type == 'NexfepUnMaximizeWindow') {
-                window.setMaximized(false);
-            } else if (dataObj.type == 'NexfepSetTitle') {
-                window.setTitle(dataObj.title);
-            } else if (dataObj.type == 'NexfepOpenDevTools') {
-                webview.openDevtools();
-            } else if (dataObj.type == 'NexfepCloseDevTools') {
-                webview.closeDevtools();
-            } else if (dataObj.type == 'CustomMessage') {
-                this.onCustomMessage(windowObj, dataObj.data);
-            } else if (dataObj.type == 'NexfepInvoke') {
-                const handlers = this.handlers.get(dataObj.event) || [];
-                handlers.forEach(async handler => {
-                    const result = await handler(dataObj.data);
-                    if(result){
+    async __createNewWindowObj(): Promise<Window> {
+        return await new Promise((resolve, reject) => {
+            setImmediate(() => {
+                const window = this.app.createBrowserWindow({ title: "Nexfep" });
+                window.hide();
+                this.freeWindowCount++;
+                const webview = window.createWebview();
+                const windowObj = new Window(window, webview, ++this.windowCount, this);
+                this.windows.push(windowObj);
+                webview.onIpcMessage((data) => {
+                    const dataText = data.body.toString();
+                    const dataObj = JSON.parse(dataText);
+                    if (dataObj.type == 'NexfepBeforeUnload') {
+                        webview.evaluateScript(
+                        `if(window?.isNexfepLoadDone){
+                            const MessageBody = { type: 'NexfepBeforeUnload' }
+                            window.ipc.postMessage(JSON.stringify(MessageBody));
+                        }else{
+                            const MessageBody = { type: 'NexfepLoadFalse' }
+                            window.ipc.postMessage(JSON.stringify(MessageBody));
+                        }`)
+                    } else if (dataObj.type == 'NexfepLoadFalse') {
+                        this.__injectControlFunctions(windowObj);
+                    } else if (dataObj.type == 'NexfepCloseWindow') {
+                        this.closeWindow(windowObj);
+                    } else if (dataObj.type == 'NexfepMinimizeWindow') {
+                        window.setMinimized(true);
+                    } else if (dataObj.type == 'NexfepUnMinimizeWindow') {
+                        window.setMinimized(false);
+                    } else if (dataObj.type == 'NexfepMaximizeWindow') {
+                        window.setMaximized(true);
+                    } else if (dataObj.type == 'NexfepUnMaximizeWindow') {
+                        window.setMaximized(false);
+                    } else if (dataObj.type == 'NexfepSetTitle') {
+                        window.setTitle(dataObj.title);
+                    } else if (dataObj.type == 'NexfepOpenDevTools') {
+                        webview.openDevtools();
+                    } else if (dataObj.type == 'NexfepCloseDevTools') {
+                        webview.closeDevtools();
+                    } else if (dataObj.type == 'CustomMessage') {
+                        this.onCustomMessage(windowObj, dataObj.data);
+                    } else if (dataObj.type == 'NexfepInvoke') {
+                        const handlers = this.handlers.get(dataObj.event) || [];
+                        handlers.forEach(async handler => {
+                            const result = await handler(dataObj.data);
+                            if(result){
+                                webview.evaluateScript(`
+                                    window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(result)} }));
+                                `);
+                            }else{
+                                webview.evaluateScript(`
+                                    window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: undefined }));
+                                `);
+                            }
+                        });
+                    } else if (dataObj.type == 'NexfepSetGlobal') {
+                        this.global.set(dataObj.name, dataObj.value);
+                    } else if (dataObj.type == 'NexfepGetGlobal') {
+                        const value = this.global.get(dataObj.name);
                         webview.evaluateScript(`
-                            window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(result)} }));
+                            window.dispatchEvent(new CustomEvent('nexfep-get-global-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(value)} }));
                         `);
-                    }else{
-                        webview.evaluateScript(`
-                            window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: undefined }));
-                        `);
+                    } else if (dataObj.type == 'NexfepBroadcast') {
+                        this.windows.forEach(async w => {
+                            if(w != windowObj && w.isOpen){
+                                w.webview.evaluateScript(`
+                                    window.dispatchEvent(new CustomEvent('${dataObj.name}', { detail: ${JSON.stringify(dataObj.data)} }));
+                                `);
+                            }
+                        })
+                    } else if (dataObj.type == 'NexfepTell') {
+                        this.windows.forEach(async w => {
+                            if(w.id == dataObj.to){
+                                w.webview.evaluateScript(`
+                                    window.dispatchEvent(new CustomEvent('${dataObj.message}', { detail: ${JSON.stringify(dataObj.data)} }));
+                                `);
+                            }
+                        })
+                    } else if (dataObj.type == 'NexfepConsoleLog') {
+                        this.logger.__printLog(windowObj.id, 'Log', dataObj.message);
+                    } else if (dataObj.type == 'NexfepConsoleError') {
+                        this.logger.__printLog(windowObj.id, 'Error', dataObj.message, '\x1b[31m', '\x1b[0m');
+                    } else if (dataObj.type == 'NexfepConsoleInfo') {
+                        this.logger.__printLog(windowObj.id, 'Info', dataObj.message, '\x1b[34m', '\x1b[0m');
+                    } else if (dataObj.type == 'NexfepConsoleWarn') {
+                        this.logger.__printLog(windowObj.id, 'Warn', dataObj.message, '\x1b[33m', '\x1b[0m');
+                    } else if (dataObj.type == 'NexfepConsoleDebug') {
+                        this.logger.__printLog(windowObj.id, 'Debug', dataObj.message, '\x1b[90m', '\x1b[0m');
                     }
                 });
-            } else if (dataObj.type == 'NexfepSetGlobal') {
-                this.global.set(dataObj.name, dataObj.value);
-            } else if (dataObj.type == 'NexfepGetGlobal') {
-                const value = this.global.get(dataObj.name);
-                webview.evaluateScript(`
-                    window.dispatchEvent(new CustomEvent('nexfep-get-global-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(value)} }));
-                `);
-            } else if (dataObj.type == 'NexfepBroadcast') {
-                this.windows.forEach(async w => {
-                    if(w != windowObj && w.isOpen){
-                        w.webview.evaluateScript(`
-                            window.dispatchEvent(new CustomEvent('${dataObj.name}', { detail: ${JSON.stringify(dataObj.data)} }));
-                        `);
-                    }
-                })
-            } else if (dataObj.type == 'NexfepTell') {
-                this.windows.forEach(async w => {
-                    if(w.id == dataObj.to){
-                        w.webview.evaluateScript(`
-                            window.dispatchEvent(new CustomEvent('${dataObj.message}', { detail: ${JSON.stringify(dataObj.data)} }));
-                        `);
-                    }
-                })
-            } else if (dataObj.type == 'NexfepConsoleLog') {
-                this.logger.__printLog(windowObj.id, 'Log', dataObj.message);
-            } else if (dataObj.type == 'NexfepConsoleError') {
-                this.logger.__printLog(windowObj.id, 'Error', dataObj.message, '\x1b[31m', '\x1b[0m');
-            } else if (dataObj.type == 'NexfepConsoleInfo') {
-                this.logger.__printLog(windowObj.id, 'Info', dataObj.message, '\x1b[34m', '\x1b[0m');
-            } else if (dataObj.type == 'NexfepConsoleWarn') {
-                this.logger.__printLog(windowObj.id, 'Warn', dataObj.message, '\x1b[33m', '\x1b[0m');
-            } else if (dataObj.type == 'NexfepConsoleDebug') {
-                this.logger.__printLog(windowObj.id, 'Debug', dataObj.message, '\x1b[90m', '\x1b[0m');
-            }
-        });
-        return windowObj;
+                resolve(windowObj);
+            })
+        })
     }
     async createWindow(isShow: boolean = true, isDecorated: boolean = true){
         const window = this.windows.find(w => w.isOpen === false) || await this.__createNewWindowObj();
@@ -388,7 +392,7 @@ class WindowPool {
             }
         }
         if(this.freeWindowCount == 0){
-            await this.__createNewWindowObj();
+            this.__createNewWindowObj();
         }
         return window;
     }
