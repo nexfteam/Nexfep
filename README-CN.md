@@ -464,15 +464,25 @@ if (window.isNexfepLoadDone) {
 
 ## CLI
 
+### `help`
+
+使用 `help` 命令获取可用命令列表：
+
+```bash
+npx nexfep help
+```
+
+### `build`
+
 Nexfep 提供命令行工具，用于将应用打包为独立可执行文件。
 
-### 用法
+#### 用法
 
 ```bash
 npx nexfep build [options]
 ```
 
-### 选项
+#### 选项
 
 | 选项 | 说明 |
 |------|------|
@@ -484,8 +494,9 @@ npx nexfep build [options]
 | `-r, --reinstall` | 构建前仅重新安装生产依赖 |
 | `-s, --skip-clean` | 跳过清理旧的构建文件 |
 | `-u, --upx <level>` | 使用 UPX 压缩可执行文件，级别 0-9（默认：0） |
+| `-m, --meta, --metadata <file>` | 元数据文件路径（默认：无） |
 
-### 示例
+#### 示例
 
 ```bash
 # 使用 package.json 默认配置构建
@@ -505,6 +516,14 @@ nexfep build -u 7
 ```
 
 该命令使用 [nexfpack](https://github.com/nexfteam/Nexfpack) 将应用打包为独立可执行文件。
+
+对于 `metadata` 参数，可以参考 [Nexfpack 文档](https://github.com/nexfteam/Nexfpack/blob/main/README-CN.md#%E5%85%83%E6%95%B0%E6%8D%AE)。
+
+注意不要包括外层的 `metadata` 字段，直接包含内部字段即可，例如：
+
+```json
+{ "1033": { "FileVersion": ... } }
+```
 
 ## API
 

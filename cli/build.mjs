@@ -8,6 +8,7 @@ export default async function build(args) {
     const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
     const NexfpackConfig = {
         name: packageJson.name,
+        metadata: undefined,
         entry: packageJson.main,
         output: 'dist',
         noConsole: true,
@@ -42,6 +43,9 @@ export default async function build(args) {
         }
         if (arg === ('--upx') || arg === '-u') {
             NexfpackConfig.upxLevel = Number(args[args.indexOf(arg) + 1]);
+        }
+        if (arg === ('--meta') || arg === ('--metadata') || arg === '-m') {
+            NexfpackConfig.metadata = JSON.parse(fs.readFileSync(args[args.indexOf(arg) + 1]));
         }
     }
     if (NexfpackConfig.upxLevel > 0) {
@@ -90,7 +94,7 @@ export default async function build(args) {
     console.log("Building...");
     const typerForBuild = new TimeTyper("Building...");
     const result = await new Promise(resolve => {
-        const child = child_process.spawn(`npx --yes nexfpack@0.4.1 ${path.join(NexfpackConfig.output, 'nexfpack.config.json')}`, { shell: true });
+        const child = child_process.spawn(`npx --yes nexfpack@0.4.2 ${path.join(NexfpackConfig.output, 'nexfpack.config.json')}`, { shell: true });
         child.on('close', (code) => {
             resolve({ status: code });
         });

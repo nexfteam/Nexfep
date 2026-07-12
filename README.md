@@ -464,15 +464,25 @@ if (window.isNexfepLoadDone) {
 
 ## CLI
 
+### `help`
+
+Use the `help` command to get a list of available commands:
+
+```bash
+npx nexfep help
+```
+
+### `build`
+
 Nexfep provides a command-line tool for building applications into standalone executables.
 
-### Usage
+#### Usage
 
 ```bash
 npx nexfep build [options]
 ```
 
-### Options
+#### Options
 
 | Option | Description |
 |--------|-------------|
@@ -484,8 +494,9 @@ npx nexfep build [options]
 | `-r, --reinstall` | Reinstall production dependencies only before building |
 | `-s, --skip-clean` | Skip cleaning old build files before building |
 | `-u, --upx <level>` | Use UPX to compress the executable, level 0-9 (default: 0) |
+| `-m, --meta, --metadata <file>` | Metadata file path (default: none) |
 
-### Examples
+#### Examples
 
 ```bash
 # Build using defaults from package.json
@@ -505,6 +516,14 @@ nexfep build -u 7
 ```
 
 This command uses [nexfpack](https://github.com/nexfteam/Nexfpack) to package your application into a standalone executable.
+
+For `metadata` parameter, you can refer to [Nexfpack documentation](https://github.com/nexfteam/Nexfpack#Metadata) for details.
+
+Please do not include the outer `metadata` field, just the internal fields. Like this:
+
+```json
+{ "1033": { "FileVersion": ... } }
+```
 
 ## API
 

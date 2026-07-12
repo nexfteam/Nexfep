@@ -23,14 +23,17 @@ Usage:
   nexfep build [options]
 
 Options:
-  -n, --name <name>     Application name (default: from package.json)
-  -e, --entry <file>    Entry file path (default: from package.json main)
-  -o, --output <dir>    Output directory (default: dist)
-  -i, --ignore <pattern> Files or directories to ignore (can be used multiple times)
-  -c, --console         Show console window on Windows (default: false)
-  -r, --reinstall       Reinstall production dependencies only before building (default: false)
-  -s, --skip-clean      Skip cleaning old build files before building (default: false)
-  -u, --upx <level>     Use UPX to compress the executable, level in range 0-9, 0 means no UPX compression, ensure UPX is installed before using (default: 0)
+  -n, --name <name>             Application name (default: from package.json)
+  -e, --entry <file>            Entry file path (default: from package.json main)
+  -o, --output <dir>            Output directory (default: dist)
+  -i, --ignore <pattern>        Files or directories to ignore (can be used multiple times)
+  -c, --console                 Show console window on Windows (default: false)
+  -r, --reinstall               Reinstall production dependencies only before building (default: false)
+  -s, --skip-clean              Skip cleaning old build files before building (default: false)
+  -u, --upx <level>             Use UPX to compress the executable, level in range 0-9, 0 means no UPX compression.
+                                Ensure UPX is installed before using (default: 0)
+  -m, --meta, --metadata <file> Metadata JSON file path.
+                                For more details, see README.md and https://github.com/nexfteam/Nexfpack#Metadata.
 
 Examples:
   nexfep build                          # Build using defaults from package.json
