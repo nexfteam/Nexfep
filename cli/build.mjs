@@ -90,7 +90,7 @@ export default async function build(args) {
     console.log("Building...");
     const typerForBuild = new TimeTyper("Building...");
     const result = await new Promise(resolve => {
-        const child = child_process.spawn(`npx --yes nexfpack@0.3.0 ${path.join(NexfpackConfig.output, 'nexfpack.config.json')}`, { shell: true });
+        const child = child_process.spawn(`npx --yes nexfpack@0.4.1 ${path.join(NexfpackConfig.output, 'nexfpack.config.json')}`, { shell: true });
         child.on('close', (code) => {
             resolve({ status: code });
         });
