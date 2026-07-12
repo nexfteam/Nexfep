@@ -522,7 +522,7 @@ nexfep build -u 7
 注意不要包括外层的 `metadata` 字段，直接包含内部字段即可，例如：
 
 ```json
-{ "1033": { "FileVersion": ... } }
+{ "1033": { "FileVersion": "..." } }
 ```
 
 ## API

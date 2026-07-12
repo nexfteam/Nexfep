@@ -522,7 +522,7 @@ For `metadata` parameter, you can refer to [Nexfpack documentation](https://gith
 Please do not include the outer `metadata` field, just the internal fields. Like this:
 
 ```json
-{ "1033": { "FileVersion": ... } }
+{ "1033": { "FileVersion": "..." } }
 ```
 
 ## API
