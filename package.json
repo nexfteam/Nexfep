@@ -17,7 +17,7 @@
     "webview",
     "typescript"
   ],
-  "version": "0.4.3",
+  "version": "0.4.4",
   "type": "module",
   "main": "./index.js",
   "scripts": {
@@ -35,6 +35,10 @@
     "README-CN.md",
     "LICENSE",
     "package.json",
+    "cli/index.mjs",
+    "cli/help.mjs",
+    "cli/build.mjs",
+    "cli/timeTyper.mjs",
     "src/WindowManager.js",
     "src/WindowManager.d.ts",
     "src/Application.js",
