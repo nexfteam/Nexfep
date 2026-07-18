@@ -17,7 +17,7 @@
     "webview",
     "typescript"
   ],
-  "version": "0.4.1",
+  "version": "0.4.2",
   "type": "module",
   "main": "./index.js",
   "scripts": {
@@ -40,7 +40,9 @@
     "src/Application.js",
     "src/Application.d.ts",
     "src/Tray.js",
-    "src/Tray.d.ts"
+    "src/Tray.d.ts",
+    "src/Logger.js",
+    "src/Logger.d.ts"
   ],
   "dependencies": {
     "@webviewjs/webview": "0.4.0"
