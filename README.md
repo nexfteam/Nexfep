@@ -37,13 +37,13 @@ pnpm add nexfep
 ## Quick Start
 
 ```typescript
-import { Application } from 'nexfep';
+import { Application } from "nexfep";
 
 const app = new Application();
 
 const window = await app.windows.createWindow(true, false);
 
-await window.loadHTML('<h1 nexfep-area-drag>Hello Nexfep!</h1>');
+await window.loadHTML("<h1 nexfep-area-drag>Hello Nexfep!</h1>");
 ```
 
 ## Usage Guide
@@ -53,21 +53,21 @@ await window.loadHTML('<h1 nexfep-area-drag>Hello Nexfep!</h1>');
 `Application` is the main entry point of the framework, responsible for managing the application lifecycle and providing access to windows, system tray, and logger.
 
 ```typescript
-import { Application } from 'nexfep';
+import { Application } from "nexfep";
 
 const app = new Application();
 // or with custom WebView2 user data directory (Windows only)
-const app = new Application({ WindowsWebview2UserDataFolder: 'C:\\custom\\webview2-data' });
+const app = new Application({ WindowsWebview2UserDataFolder: "C:\\custom\\webview2-data" });
 // or with log file path
-const app = new Application({ LogFilePath: './app.log' });
+const app = new Application({ LogFilePath: "./app.log" });
 ```
 
 **Constructor Options**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option                          | Type                | Default                                          | Description                                 |
+| ------------------------------- | ------------------- | ------------------------------------------------ | ------------------------------------------- |
 | `WindowsWebview2UserDataFolder` | `string` (optional) | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 user data directory (Windows only) |
-| `LogFilePath` | `string` (optional) | none | File path for log output |
+| `LogFilePath`                   | `string` (optional) | none                                             | File path for log output                    |
 
 **Properties**
 
@@ -78,6 +78,7 @@ const app = new Application({ LogFilePath: './app.log' });
 **Methods**
 
 - `createTray(options)` — Create a system tray icon with context menu
+- `createLocker(appName)` — Create an application instance lock to prevent multiple instances
 - `exit()` — Exit the application
 
 ### Logger
@@ -85,22 +86,22 @@ const app = new Application({ LogFilePath: './app.log' });
 The logger supports both file output and colored console output. It can be accessed via `app.logger`.
 
 ```typescript
-app.logger.log('Hello World');
-app.logger.error('An error occurred');
-app.logger.warn('Warning message');
-app.logger.info('Info message');
-app.logger.debug('Debug message');
+app.logger.log("Hello World");
+app.logger.error("An error occurred");
+app.logger.warn("Warning message");
+app.logger.info("Info message");
+app.logger.debug("Debug message");
 ```
 
 **Methods**
 
-| Method | Description |
-|--------|-------------|
-| `log(message)` | Log a message |
-| `error(message)` | Log an error message (red) |
-| `warn(message)` | Log a warning message (yellow) |
-| `info(message)` | Log an info message (blue) |
-| `debug(message)` | Log a debug message (gray) |
+| Method           | Description                    |
+| ---------------- | ------------------------------ |
+| `log(message)`   | Log a message                  |
+| `error(message)` | Log an error message (red)     |
+| `warn(message)`  | Log a warning message (yellow) |
+| `info(message)`  | Log an info message (blue)     |
+| `debug(message)` | Log a debug message (gray)     |
 
 Each method accepts either a string or an array of strings.
 
@@ -108,24 +109,53 @@ Each method accepts either a string or an array of strings.
 
 Console calls (`console.log`, `console.error`, `console.info`, `console.warn`, `console.debug`) in the page are automatically intercepted and forwarded to the main process logger, with the source window ID included in the output.
 
+### Locker
+
+`Locker` is a class for managing application instance locks, preventing multiple instances from running simultaneously.
+
+```typescript
+const locker = app.createLocker("my-app");
+try {
+  // Try to acquire the lock
+  await locker.lock();
+} catch {
+  // Instance already exists, exit the application
+  app.exit();
+}
+// Focus the current instance when other instances acquire the lock
+locker.whenLost(() => {
+  if (!locker.isFocused()) {
+    locker.focus();
+  }
+});
+// Release the lock
+locker.unlock();
+```
+
+**Methods**
+
+- `lock()` — Try to acquire the lock
+- `whenLost(callback)` — Register a callback to be called when other instances acquire the lock
+- `unlock()` — Release the lock
+
 ### Tray
 
 Create and manage system tray icons with context menus via `app.createTray()`.
 
 ```typescript
-import { readFileSync } from 'fs';
+import { readFileSync } from "fs";
 
 const tray = app.createTray({
-  id: 'my-tray',
-  tooltip: 'My App',
+  id: "my-tray",
+  tooltip: "My App",
   icon: {
-    data: readFileSync('./icon.png'),
+    data: readFileSync("./icon.png"),
     width: 32,
     height: 32,
   },
   menuItems: [
-    { id: 'show', label: 'Show Window' },
-    { id: 'quit', label: 'Quit' },
+    { id: "show", label: "Show Window" },
+    { id: "quit", label: "Quit" },
   ],
 });
 ```
@@ -134,32 +164,32 @@ The `icon` field accepts a `TrayIconImage` object:
 
 ```typescript
 interface TrayIconImage {
-  data: Buffer;      // Image binary data
-  width?: number;    // Optional width
-  height?: number;   // Optional height
+  data: Buffer; // Image binary data
+  width?: number; // Optional width
+  height?: number; // Optional height
 }
 ```
 
 **Methods**
 
-| Method                                      | Description                         |
-|---------------------------------------------|-------------------------------------|
-| `addMenuItem(item)`                         | Add a menu item                     |
-| `removeMenuItem(id)`                        | Remove a menu item by ID            |
-| `setMenuItems(items)`                       | Replace all menu items              |
-| `setIcon(icon, width?, height?)`            | Change the tray icon (raw pixel data as `Uint8Array` / `number[]`) |
-| `setTooltip(tooltip)`                       | Change the tooltip text             |
-| `on(event, callback)`                       | Listen for tray events (e.g. `'click'`) |
-| `show()`                                    | Show the tray icon                  |
-| `hide()`                                    | Hide the tray icon                  |
-| `destroy()`                                 | Destroy the tray icon               |
+| Method                           | Description                                                        |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `addMenuItem(item)`              | Add a menu item                                                    |
+| `removeMenuItem(id)`             | Remove a menu item by ID                                           |
+| `setMenuItems(items)`            | Replace all menu items                                             |
+| `setIcon(icon, width?, height?)` | Change the tray icon (raw pixel data as `Uint8Array` / `number[]`) |
+| `setTooltip(tooltip)`            | Change the tooltip text                                            |
+| `on(event, callback)`            | Listen for tray events (e.g. `'click'`)                            |
+| `show()`                         | Show the tray icon                                                 |
+| `hide()`                         | Hide the tray icon                                                 |
+| `destroy()`                      | Destroy the tray icon                                              |
 
 ```typescript
-tray.on('click', () => {
-  console.log('Tray clicked');
+tray.on("click", () => {
+  console.log("Tray clicked");
 });
-tray.addMenuItem({ id: 'about', label: 'About' });
-tray.setTooltip('Nexfep App');
+tray.addMenuItem({ id: "about", label: "About" });
+tray.setTooltip("Nexfep App");
 ```
 
 ### Notifications
@@ -167,7 +197,7 @@ tray.setTooltip('Nexfep App');
 Send desktop notifications via `app.utils.notify()`.
 
 ```typescript
-const notification = app.utils.notify('Title', 'Notification body');
+const notification = app.utils.notify("Title", "Notification body");
 ```
 
 **Parameters**
@@ -202,7 +232,8 @@ window.hide();
 window.maximize();
 window.minimize();
 window.close();
-window.setTitle('New Title');
+window.focus();
+window.setTitle("New Title");
 window.setSize(800, 600);
 window.openDevTools();
 ```
@@ -214,7 +245,7 @@ window.openDevTools();
 Send messages via `window.postMessage` in the page:
 
 ```javascript
-window.postMessage({ hello: 'world' });
+window.postMessage({ hello: "world" });
 ```
 
 **Parameters**
@@ -243,8 +274,8 @@ pool.onCustomMessage = (window, data) => {
 Invoke events via `window.invoke` in the page:
 
 ```javascript
-window.invoke('hello');
-window.invoke('hello', 'world');
+window.invoke("hello");
+window.invoke("hello", "world");
 ```
 
 **Parameters**
@@ -257,8 +288,8 @@ window.invoke('hello', 'world');
 Listen for events via `pool.handle` in the main process:
 
 ```typescript
-pool.handle('hello', (data) => {
-  console.log('Received event hello:', data);
+pool.handle("hello", (data) => {
+  console.log("Received event hello:", data);
 });
 ```
 
@@ -272,8 +303,8 @@ pool.handle('hello', (data) => {
 Remove event listener via `pool.unhandle` in the main process:
 
 ```typescript
-pool.unhandle('hello', (data) => {
-  console.log('Received event hello:', data);
+pool.unhandle("hello", (data) => {
+  console.log("Received event hello:", data);
 });
 ```
 
@@ -289,7 +320,7 @@ pool.unhandle('hello', (data) => {
 Set a global variable via `window.setGlobal` in the page:
 
 ```javascript
-window.setGlobal('hello', 'world');
+window.setGlobal("hello", "world");
 ```
 
 **Parameters**
@@ -302,7 +333,7 @@ window.setGlobal('hello', 'world');
 Get a global variable via `window.getGlobal` in the page:
 
 ```javascript
-const value = await window.getGlobal('hello');
+const value = await window.getGlobal("hello");
 ```
 
 **Parameters**
@@ -315,8 +346,8 @@ Get a `Map<string, any>` containing all global variables via `pool.global` in th
 
 ```typescript
 const globals = pool.global;
-globals.set('hello', 'world');
-const value = globals.get('hello');
+globals.set("hello", "world");
+const value = globals.get("hello");
 ```
 
 ### Inter-Window Communication
@@ -328,7 +359,7 @@ The framework supports direct communication between windows via `window.broadcas
 Send an event to all other open windows via `window.broadcast`:
 
 ```javascript
-window.broadcast('user-login', { userId: 123 });
+window.broadcast("user-login", { userId: 123 });
 ```
 
 **Parameters**
@@ -339,8 +370,8 @@ window.broadcast('user-login', { userId: 123 });
 Other windows listen for the broadcast event via `window.addEventListener`:
 
 ```javascript
-window.addEventListener('user-login', (event) => {
-  console.log('User logged in:', event.detail);
+window.addEventListener("user-login", (event) => {
+  console.log("User logged in:", event.detail);
 });
 ```
 
@@ -349,7 +380,7 @@ window.addEventListener('user-login', (event) => {
 Send a message to a specific window by its ID via `window.tell`:
 
 ```javascript
-window.tell(2, 'custom-message', { text: 'Hello Window 2' });
+window.tell(2, "custom-message", { text: "Hello Window 2" });
 ```
 
 **Parameters**
@@ -361,15 +392,15 @@ window.tell(2, 'custom-message', { text: 'Hello Window 2' });
 The target window receives the message via `window.addEventListener`:
 
 ```javascript
-window.addEventListener('custom-message', (event) => {
-  console.log('Received message:', event.detail);
+window.addEventListener("custom-message", (event) => {
+  console.log("Received message:", event.detail);
 });
 ```
 
 Each window's ID can be accessed via `window.id`:
 
 ```javascript
-console.log('This window ID:', window.id);
+console.log("This window ID:", window.id);
 ```
 
 ### Window Control Functions
@@ -377,21 +408,21 @@ console.log('This window ID:', window.id);
 The following injected functions can be directly called in the page for window control:
 
 ```javascript
-window.close();              // Close window
-window.minimize();           // Minimize window
-window.unminimize();         // Restore minimized window
-window.maximize();           // Maximize window
-window.unmaximize();         // Restore maximized window
-window.setTitle('Title');    // Set window title
-window.openDevTools();       // Open developer tools
-window.closeDevTools();      // Close developer tools
+window.close(); // Close window
+window.minimize(); // Minimize window
+window.unminimize(); // Restore minimized window
+window.maximize(); // Maximize window
+window.unmaximize(); // Restore maximized window
+window.setTitle("Title"); // Set window title
+window.openDevTools(); // Open developer tools
+window.closeDevTools(); // Close developer tools
 ```
 
 The following properties are also available in the page:
 
 ```javascript
-console.log(window.id);                // Window unique identifier
-console.log(window.isNexfepLoadDone);  // Whether the window has finished loading
+console.log(window.id); // Window unique identifier
+console.log(window.isNexfepLoadDone); // Whether the window has finished loading
 ```
 
 ### Drag Regions
@@ -449,8 +480,8 @@ Automatically determines drag regions: the entire region is draggable, but commo
 The `nexfep-load-done` event is triggered after the WebView window finishes loading:
 
 ```javascript
-window.addEventListener('nexfep-load-done', () => {
-  console.log('Nexfep window loaded');
+window.addEventListener("nexfep-load-done", () => {
+  console.log("Nexfep window loaded");
 });
 ```
 
@@ -484,17 +515,17 @@ npx nexfep build [options]
 
 #### Options
 
-| Option | Description |
-|--------|-------------|
-| `-n, --name <name>` | Application name (default: from package.json) |
-| `-e, --entry <file>` | Entry file path (default: from package.json main) |
-| `-o, --output <dir>` | Output directory (default: dist) |
-| `-i, --ignore <pattern>` | Files or directories to ignore (can be used multiple times) |
-| `-c, --console` | Show console window on Windows (default: false) |
-| `-r, --reinstall` | Reinstall production dependencies only before building |
-| `-s, --skip-clean` | Skip cleaning old build files before building |
-| `-u, --upx <level>` | Use UPX to compress the executable, level 0-9 (default: 0) |
-| `-m, --meta, --metadata <file>` | Metadata file path (default: none) |
+| Option                          | Description                                                 |
+| ------------------------------- | ----------------------------------------------------------- |
+| `-n, --name <name>`             | Application name (default: from package.json)               |
+| `-e, --entry <file>`            | Entry file path (default: from package.json main)           |
+| `-o, --output <dir>`            | Output directory (default: dist)                            |
+| `-i, --ignore <pattern>`        | Files or directories to ignore (can be used multiple times) |
+| `-c, --console`                 | Show console window on Windows (default: false)             |
+| `-r, --reinstall`               | Reinstall production dependencies only before building      |
+| `-s, --skip-clean`              | Skip cleaning old build files before building               |
+| `-u, --upx <level>`             | Use UPX to compress the executable, level 0-9 (default: 0)  |
+| `-m, --meta, --metadata <file>` | Metadata file path (default: none)                          |
 
 #### Examples
 
@@ -529,46 +560,55 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 
 ### Application
 
-| Method/Property | Parameters | Return Value | Description |
-|----------------|-----------|--------------|-------------|
-| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath? }` | Application | Creates the application instance |
-| `windows` | / | WindowPool | The window pool instance |
-| `utils` | / | \_\_Utils | Utility methods (notifications) |
-| `logger` | / | Logger | The logger instance |
-| `createTray(options)` | see Tray section | Tray | Creates a system tray icon |
-| `exit()` | None | void | Exits the application |
+| Method/Property         | Parameters                                         | Return Value | Description                      |
+| ----------------------- | -------------------------------------------------- | ------------ | -------------------------------- |
+| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath? }` | Application  | Creates the application instance |
+| `windows`               | /                                                  | WindowPool   | The window pool instance         |
+| `utils`                 | /                                                  | \_\_Utils    | Utility methods (notifications)  |
+| `logger`                | /                                                  | Logger       | The logger instance              |
+| `createTray(options)`   | see Tray section                                   | Tray         | Creates a system tray icon       |
+| `exit()`                | None                                               | void         | Exits the application            |
 
 ### WindowPool
 
-| Method/Property | Parameters | Return Value | Description |
-|----------------|-----------|--------------|-------------|
-| `createWindow(isShow?, isDecorated?)` | `isShow`: boolean (default true), `isDecorated`: boolean (default true) | Promise\<Window> | Creates and returns a window |
-| `handle(event, callback)` | `event`: string, `callback`: (data: any) => any | None | Listens for the specified event |
-| `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any | None | Removes the specified event listener |
-| `global` | / | Map\<string, any> | A global variable map |
-| `closeWindow(window)` | `window`: Window | Promise\<void> | Closes the specified window and returns it to the pool |
-| `onCustomMessage` | `(window: Window, data: string) => void` | None | Custom message callback |
+| Method/Property                       | Parameters                                                              | Return Value      | Description                                            |
+| ------------------------------------- | ----------------------------------------------------------------------- | ----------------- | ------------------------------------------------------ |
+| `createWindow(isShow?, isDecorated?)` | `isShow`: boolean (default true), `isDecorated`: boolean (default true) | Promise\<Window>  | Creates and returns a window                           |
+| `handle(event, callback)`             | `event`: string, `callback`: (data: any) => any                         | None              | Listens for the specified event                        |
+| `unhandle(event, callback)`           | `event`: string, `callback`: (data: any) => any                         | None              | Removes the specified event listener                   |
+| `global`                              | /                                                                       | Map\<string, any> | A global variable map                                  |
+| `closeWindow(window)`                 | `window`: Window                                                        | Promise\<void>    | Closes the specified window and returns it to the pool |
+| `onCustomMessage`                     | `(window: Window, data: string) => void`                                | None              | Custom message callback                                |
 
 ### Window
 
-| Method/Property | Parameters | Return Value | Description |
-|----------------|-----------|--------------|-------------|
-| `loadURL(url)` | `url`: string — URL to load | Promise\<void> | Loads the specified URL |
-| `loadHTML(html)` | `html`: string — HTML string | Promise\<void> | Loads the specified HTML content |
-| `show()` | None | void | Shows the window |
-| `hide()` | None | void | Hides the window |
-| `maximize()` | None | void | Maximizes the window |
-| `unMaximize()` | None | void | Restores the window (cancels maximize) |
-| `minimize()` | None | void | Minimizes the window |
-| `unMinimize()` | None | void | Restores the window (cancels minimize) |
-| `close()` | None | void | Closes the window and returns to pool |
-| `setTitle(title)` | `title`: string | void | Sets the window title |
-| `setDecorated(isDecorated)` | `isDecorated`: boolean | void | Sets whether the window has borders and title bar |
-| `resizable(resizable)` | `resizable`: boolean | void | Sets whether the window is resizable |
-| `setSize(width, height)` | `width`: number, `height`: number | void | Sets the window size in pixels |
-| `openDevTools()` | None | void | Opens developer tools |
-| `closeDevTools()` | None | void | Closes developer tools |
-| `id` | None | number | Unique window identifier, auto-incrementing |
+| Method/Property             | Parameters                        | Return Value                      | Description                                       |
+| --------------------------- | --------------------------------- | --------------------------------- | ------------------------------------------------- |
+| `loadURL(url)`              | `url`: string — URL to load       | Promise\<void>                    | Loads the specified URL                           |
+| `loadHTML(html)`            | `html`: string — HTML string      | Promise\<void>                    | Loads the specified HTML content                  |
+| `show()`                    | None                              | void                              | Shows the window                                  |
+| `hide()`                    | None                              | void                              | Hides the window                                  |
+| `maximize()`                | None                              | void                              | Maximizes the window                              |
+| `unMaximize()`              | None                              | void                              | Restores the window (cancels maximize)            |
+| `minimize()`                | None                              | void                              | Minimizes the window                              |
+| `unMinimize()`              | None                              | void                              | Restores the window (cancels minimize)            |
+| `close()`                   | None                              | void                              | Closes the window and returns to pool             |
+| `setTitle(title)`           | `title`: string                   | void                              | Sets the window title                             |
+| `setDecorated(isDecorated)` | `isDecorated`: boolean            | void                              | Sets whether the window has borders and title bar |
+| `resizable(resizable)`      | `resizable`: boolean              | void                              | Sets whether the window is resizable              |
+| `setSize(width, height)`    | `width`: number, `height`: number | void                              | Sets the window size in pixels                    |
+| `getSize()`                 | None                              | { width: number, height: number } | Gets the window size in pixels                    |
+| `setPosition(x, y)`         | `x`: number, `y`: number          | void                              | Sets the window position in pixels                |
+| `getPosition()`             | None                              | { x: number, y: number }          | Gets the window position in pixels                |
+| `isMaximized()`             | None                              | boolean                           | Whether the window is maximized                   |
+| `isMinimized()`             | None                              | boolean                           | Whether the window is minimized                   |
+| `toggleMaximize()`          | None                              | void                              | Toggles the window maximized state                |
+| `toggleMinimize()`          | None                              | void                              | Toggles the window minimized state                |
+| `isFocused()`               | None                              | boolean                           | Whether the window has focused                    |
+| `focus()`                   | None                              | void                              | Focuses the window                                |
+| `openDevTools()`            | None                              | void                              | Opens developer tools                             |
+| `closeDevTools()`           | None                              | void                              | Closes developer tools                            |
+| `id`                        | None                              | number                            | Unique window identifier, auto-incrementing       |
 
 ## Development
 

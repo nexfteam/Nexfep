@@ -1,32 +1,24 @@
 {
   "name": "nexfep",
+  "version": "0.5.0",
   "description": "A desktop application framework based on @webviewjs/webview",
-  "repository": "https://github.com/nexfteam/Nexfep",
+  "keywords": [
+    "@webviewjs/webview",
+    "application",
+    "desktop",
+    "framework",
+    "typescript",
+    "webview"
+  ],
   "homepage": "https://github.com/nexfteam/Nexfep#readme",
   "bugs": {
     "url": "https://github.com/nexfteam/Nexfep/issues"
   },
+  "license": "MIT",
+  "author": "nexfteam",
+  "repository": "https://github.com/nexfteam/Nexfep",
   "bin": {
     "nexfep": "cli/index.mjs"
-  },
-  "keywords": [
-    "desktop",
-    "application",
-    "framework",
-    "@webviewjs/webview",
-    "webview",
-    "typescript"
-  ],
-  "version": "0.4.4",
-  "type": "module",
-  "main": "./index.js",
-  "scripts": {
-    "compile": "tsc"
-  },
-  "author": "nexfteam",
-  "license": "MIT",
-  "engines": {
-    "node": ">=20.11.0"
   },
   "files": [
     "index.js",
@@ -46,14 +38,31 @@
     "src/Tray.js",
     "src/Tray.d.ts",
     "src/Logger.js",
-    "src/Logger.d.ts"
+    "src/Logger.d.ts",
+    "src/SingleInstance.js",
+    "src/SingleInstance.d.ts"
   ],
+  "type": "module",
+  "main": "./index.js",
+  "scripts": {
+    "compile": "tsc",
+    "fmt": "oxfmt --check",
+    "lint": "oxlint",
+    "fmt:fix": "oxfmt",
+    "lint:fix": "oxlint --fix"
+  },
   "dependencies": {
+    "@nexfteam/single-instance": "^0.0.7",
     "@webviewjs/webview": "0.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "oxfmt": "^0.60.0",
+    "oxlint": "^1.75.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20.11.0"
   }
 }

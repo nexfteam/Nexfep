@@ -8,7 +8,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 ## Major
 
-> 暂无Major TODO
+暂无
 
 ---
 
@@ -101,25 +101,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 ---
 
-### 4. 单例模式
-
-进度：`0%  -----  0/5`
-
-#### 描述
-
-确保应用只有一个实例在运行，再次启动时唤醒已有窗口。
-
-#### 子任务列表
-
-- [ ] 实现单例检测机制（使用 socket 或锁文件）
-- [ ] 应用启动时检测是否已有实例在运行
-- [ ] 如果已有实例，将新实例的启动参数传递给已有实例，然后退出新实例
-- [ ] 支持 `--no-single` 参数允许启动多个实例（调试用）
-- [ ] 支持跨用户会话的单例检测
-
----
-
-### 5. 文件拖入支持
+### 4. 文件拖入支持
 
 进度：`0%  ------  0/6`
 
@@ -137,7 +119,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 ---
 
-### 6. 系统主题跟随
+### 5. 系统主题跟随
 
 进度：`0%  ------  0/6`
 

@@ -37,13 +37,13 @@ pnpm add nexfep
 ## 快速开始
 
 ```typescript
-import { Application } from 'nexfep';
+import { Application } from "nexfep";
 
 const app = new Application();
 
 const window = await app.windows.createWindow(true, false);
 
-await window.loadHTML('<h1 nexfep-area-drag>Hello Nexfep!</h1>');
+await window.loadHTML("<h1 nexfep-area-drag>Hello Nexfep!</h1>");
 ```
 
 ## 使用指南
@@ -53,21 +53,21 @@ await window.loadHTML('<h1 nexfep-area-drag>Hello Nexfep!</h1>');
 `Application` 是框架的主入口，负责管理应用生命周期，提供窗口、系统托盘和日志的访问。
 
 ```typescript
-import { Application } from 'nexfep';
+import { Application } from "nexfep";
 
 const app = new Application();
 // 或指定自定义 WebView2 用户数据目录（仅 Windows 生效）
-const app = new Application({ WindowsWebview2UserDataFolder: 'C:\\custom\\webview2-data' });
+const app = new Application({ WindowsWebview2UserDataFolder: "C:\\custom\\webview2-data" });
 // 或指定日志文件路径
-const app = new Application({ LogFilePath: './app.log' });
+const app = new Application({ LogFilePath: "./app.log" });
 ```
 
 **构造函数参数**
 
-| 选项 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| 选项                            | 类型             | 默认值                                           | 说明                                |
+| ------------------------------- | ---------------- | ------------------------------------------------ | ----------------------------------- |
 | `WindowsWebview2UserDataFolder` | `string`（可选） | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 用户数据目录（仅 Windows） |
-| `LogFilePath` | `string`（可选） | 无 | 日志文件输出路径 |
+| `LogFilePath`                   | `string`（可选） | 无                                               | 日志文件输出路径                    |
 
 **属性**
 
@@ -78,6 +78,7 @@ const app = new Application({ LogFilePath: './app.log' });
 **方法**
 
 - `createTray(options)` — 创建系统托盘图标和右键菜单
+- `createLocker(appName)` — 创建应用实例锁，防止多个实例运行
 - `exit()` — 退出应用
 
 ### Logger
@@ -85,21 +86,21 @@ const app = new Application({ LogFilePath: './app.log' });
 Logger 支持文件输出和彩色控制台输出，可通过 `app.logger` 访问。
 
 ```typescript
-app.logger.log('Hello World');
-app.logger.error('发生错误');
-app.logger.warn('警告信息');
-app.logger.info('提示信息');
-app.logger.debug('调试信息');
+app.logger.log("Hello World");
+app.logger.error("发生错误");
+app.logger.warn("警告信息");
+app.logger.info("提示信息");
+app.logger.debug("调试信息");
 ```
 
 **方法**
 
-| 方法 | 说明 |
-|------|------|
-| `log(message)` | 记录日志 |
+| 方法             | 说明                 |
+| ---------------- | -------------------- |
+| `log(message)`   | 记录日志             |
 | `error(message)` | 记录错误日志（红色） |
-| `warn(message)` | 记录警告日志（黄色） |
-| `info(message)` | 记录提示日志（蓝色） |
+| `warn(message)`  | 记录警告日志（黄色） |
+| `info(message)`  | 记录提示日志（蓝色） |
 | `debug(message)` | 记录调试日志（灰色） |
 
 每个方法接受字符串或字符串数组作为参数。
@@ -108,24 +109,55 @@ app.logger.debug('调试信息');
 
 页面中的 `console.log`、`console.error`、`console.info`、`console.warn`、`console.debug` 调用会被自动拦截并转发到主进程 Logger，输出中包含来源窗口的 ID。
 
+### 应用单例锁
+
+通过 `app.createLocker()` 设置应用单例锁。
+
+```typescript
+const locker = app.createLocker("my-app");
+try {
+  // 尝试获取应用实例锁
+  await locker.lock();
+} catch {
+  // 应用实例已存在，退出应用
+  app.exit();
+}
+// 在其它实例抢锁时聚焦当前实例
+locker.whenLost(() => {
+  if (!locker.isFocused()) {
+    locker.focus();
+  }
+});
+// 释放锁
+locker.unlock();
+```
+
+**方法**
+
+| 方法                 | 描述                     |
+| -------------------- | ------------------------ |
+| `lock()`             | 尝试获取应用实例锁       |
+| `whenLost(callback)` | 当其它实例抢锁时执行回调 |
+| `unlock()`           | 释放锁                   |
+
 ### 托盘图标
 
 通过 `app.createTray()` 创建和管理系统托盘图标及右键菜单。
 
 ```typescript
-import { readFileSync } from 'fs';
+import { readFileSync } from "fs";
 
 const tray = app.createTray({
-  id: 'my-tray',
-  tooltip: '我的应用',
+  id: "my-tray",
+  tooltip: "我的应用",
   icon: {
-    data: readFileSync('./icon.png'),
+    data: readFileSync("./icon.png"),
     width: 32,
     height: 32,
   },
   menuItems: [
-    { id: 'show', label: '显示窗口' },
-    { id: 'quit', label: '退出' },
+    { id: "show", label: "显示窗口" },
+    { id: "quit", label: "退出" },
   ],
 });
 ```
@@ -134,32 +166,32 @@ const tray = app.createTray({
 
 ```typescript
 interface TrayIconImage {
-  data: Buffer;      // 图片二进制数据
-  width?: number;    // 可选宽度
-  height?: number;   // 可选高度
+  data: Buffer; // 图片二进制数据
+  width?: number; // 可选宽度
+  height?: number; // 可选高度
 }
 ```
 
 **方法**
 
-| 方法                                         | 描述               |
-|---------------------------------------------|--------------------|
-| `addMenuItem(item)`                         | 添加菜单项          |
-| `removeMenuItem(id)`                        | 按 ID 删除菜单项    |
-| `setMenuItems(items)`                       | 替换所有菜单项      |
-| `setIcon(icon, width?, height?)`            | 更改托盘图标（原始像素数据 `Uint8Array` / `number[]`） |
-| `setTooltip(tooltip)`                       | 更改悬停提示文本    |
-| `on(event, callback)`                       | 监听托盘事件（如 `'click'`） |
-| `show()`                                    | 显示托盘图标        |
-| `hide()`                                    | 隐藏托盘图标        |
-| `destroy()`                                 | 销毁托盘图标        |
+| 方法                             | 描述                                                   |
+| -------------------------------- | ------------------------------------------------------ |
+| `addMenuItem(item)`              | 添加菜单项                                             |
+| `removeMenuItem(id)`             | 按 ID 删除菜单项                                       |
+| `setMenuItems(items)`            | 替换所有菜单项                                         |
+| `setIcon(icon, width?, height?)` | 更改托盘图标（原始像素数据 `Uint8Array` / `number[]`） |
+| `setTooltip(tooltip)`            | 更改悬停提示文本                                       |
+| `on(event, callback)`            | 监听托盘事件（如 `'click'`）                           |
+| `show()`                         | 显示托盘图标                                           |
+| `hide()`                         | 隐藏托盘图标                                           |
+| `destroy()`                      | 销毁托盘图标                                           |
 
 ```typescript
-tray.on('click', () => {
-  console.log('托盘被点击');
+tray.on("click", () => {
+  console.log("托盘被点击");
 });
-tray.addMenuItem({ id: 'about', label: '关于' });
-tray.setTooltip('Nexfep 应用');
+tray.addMenuItem({ id: "about", label: "关于" });
+tray.setTooltip("Nexfep 应用");
 ```
 
 ### 桌面通知
@@ -167,7 +199,7 @@ tray.setTooltip('Nexfep 应用');
 通过 `app.utils.notify()` 发送桌面通知。
 
 ```typescript
-const notification = app.utils.notify('标题', '通知内容');
+const notification = app.utils.notify("标题", "通知内容");
 ```
 
 **参数**
@@ -202,7 +234,8 @@ window.hide();
 window.maximize();
 window.minimize();
 window.close();
-window.setTitle('新标题');
+window.focus();
+window.setTitle("新标题");
 window.setSize(800, 600);
 window.openDevTools();
 ```
@@ -214,7 +247,7 @@ window.openDevTools();
 在页面中通过 `window.postMessage` 发送消息：
 
 ```javascript
-window.postMessage({ hello: 'world' });
+window.postMessage({ hello: "world" });
 ```
 
 **参数说明**
@@ -243,8 +276,8 @@ pool.onCustomMessage = (window, data) => {
 在页面中通过 `window.invoke` 触发事件：
 
 ```javascript
-window.invoke('hello');
-window.invoke('hello', 'world');
+window.invoke("hello");
+window.invoke("hello", "world");
 ```
 
 **参数说明**
@@ -257,8 +290,8 @@ window.invoke('hello', 'world');
 在主进程中通过 `pool.handle` 监听事件：
 
 ```typescript
-pool.handle('hello', (data) => {
-  console.log('收到事件 hello:', data);
+pool.handle("hello", (data) => {
+  console.log("收到事件 hello:", data);
 });
 ```
 
@@ -272,8 +305,8 @@ pool.handle('hello', (data) => {
 在主进程中通过 `pool.unhandle` 取消监听事件：
 
 ```typescript
-pool.unhandle('hello', (data) => {
-  console.log('收到事件 hello:', data);
+pool.unhandle("hello", (data) => {
+  console.log("收到事件 hello:", data);
 });
 ```
 
@@ -289,7 +322,7 @@ pool.unhandle('hello', (data) => {
 在页面中通过 `window.setGlobal` 设置全局变量：
 
 ```javascript
-window.setGlobal('hello', 'world');
+window.setGlobal("hello", "world");
 ```
 
 **参数说明**
@@ -302,7 +335,7 @@ window.setGlobal('hello', 'world');
 在页面中通过 `window.getGlobal` 获取全局变量：
 
 ```javascript
-const value = await window.getGlobal('hello');
+const value = await window.getGlobal("hello");
 ```
 
 **参数说明**
@@ -315,8 +348,8 @@ const value = await window.getGlobal('hello');
 
 ```typescript
 const globals = pool.global;
-globals.set('hello', 'world');
-const value = globals.get('hello');
+globals.set("hello", "world");
+const value = globals.get("hello");
 ```
 
 ### 窗口间通信
@@ -328,7 +361,7 @@ const value = globals.get('hello');
 通过 `window.broadcast` 向所有其他打开的窗口发送事件：
 
 ```javascript
-window.broadcast('user-login', { userId: 123 });
+window.broadcast("user-login", { userId: 123 });
 ```
 
 **参数说明**
@@ -339,8 +372,8 @@ window.broadcast('user-login', { userId: 123 });
 其他窗口通过 `window.addEventListener` 监听广播事件：
 
 ```javascript
-window.addEventListener('user-login', (event) => {
-  console.log('用户已登录:', event.detail);
+window.addEventListener("user-login", (event) => {
+  console.log("用户已登录:", event.detail);
 });
 ```
 
@@ -349,7 +382,7 @@ window.addEventListener('user-login', (event) => {
 通过 `window.tell` 向指定 ID 的窗口发送消息：
 
 ```javascript
-window.tell(2, 'custom-message', { text: '你好，窗口2' });
+window.tell(2, "custom-message", { text: "你好，窗口2" });
 ```
 
 **参数说明**
@@ -361,15 +394,15 @@ window.tell(2, 'custom-message', { text: '你好，窗口2' });
 目标窗口通过 `window.addEventListener` 接收消息：
 
 ```javascript
-window.addEventListener('custom-message', (event) => {
-  console.log('收到消息:', event.detail);
+window.addEventListener("custom-message", (event) => {
+  console.log("收到消息:", event.detail);
 });
 ```
 
 每个窗口的 ID 可通过 `window.id` 获取：
 
 ```javascript
-console.log('当前窗口 ID:', window.id);
+console.log("当前窗口 ID:", window.id);
 ```
 
 ### 窗口控制函数
@@ -377,20 +410,20 @@ console.log('当前窗口 ID:', window.id);
 页面中可直接调用以下注入函数进行窗口控制：
 
 ```javascript
-window.close();              // 关闭窗口
-window.minimize();           // 最小化窗口
-window.unminimize();         // 还原最小化的窗口
-window.maximize();           // 最大化窗口
-window.unmaximize();         // 还原最大化的窗口
-window.setTitle('标题');     // 设置窗口标题
-window.openDevTools();       // 打开开发者工具
-window.closeDevTools();      // 关闭开发者工具
+window.close(); // 关闭窗口
+window.minimize(); // 最小化窗口
+window.unminimize(); // 还原最小化的窗口
+window.maximize(); // 最大化窗口
+window.unmaximize(); // 还原最大化的窗口
+window.setTitle("标题"); // 设置窗口标题
+window.openDevTools(); // 打开开发者工具
+window.closeDevTools(); // 关闭开发者工具
 ```
 
 页面中还可访问以下属性：
 
 ```javascript
-console.log(window.id);               // 窗口唯一标识
+console.log(window.id); // 窗口唯一标识
 console.log(window.isNexfepLoadDone); // 窗口是否已加载完成
 ```
 
@@ -449,8 +482,8 @@ console.log(window.isNexfepLoadDone); // 窗口是否已加载完成
 WebView 窗口加载完成后会触发 `nexfep-load-done` 事件：
 
 ```javascript
-window.addEventListener('nexfep-load-done', () => {
-  console.log('Nexfep 窗口加载完成');
+window.addEventListener("nexfep-load-done", () => {
+  console.log("Nexfep 窗口加载完成");
 });
 ```
 
@@ -484,17 +517,17 @@ npx nexfep build [options]
 
 #### 选项
 
-| 选项 | 说明 |
-|------|------|
-| `-n, --name <name>` | 应用名称（默认：来自 package.json） |
-| `-e, --entry <file>` | 入口文件路径（默认：来自 package.json main） |
-| `-o, --output <dir>` | 输出目录（默认：dist） |
-| `-i, --ignore <pattern>` | 要忽略的文件或目录（可多次使用） |
-| `-c, --console` | 在 Windows 上显示控制台窗口（默认：false） |
-| `-r, --reinstall` | 构建前仅重新安装生产依赖 |
-| `-s, --skip-clean` | 跳过清理旧的构建文件 |
-| `-u, --upx <level>` | 使用 UPX 压缩可执行文件，级别 0-9（默认：0） |
-| `-m, --meta, --metadata <file>` | 元数据文件路径（默认：无） |
+| 选项                            | 说明                                         |
+| ------------------------------- | -------------------------------------------- |
+| `-n, --name <name>`             | 应用名称（默认：来自 package.json）          |
+| `-e, --entry <file>`            | 入口文件路径（默认：来自 package.json main） |
+| `-o, --output <dir>`            | 输出目录（默认：dist）                       |
+| `-i, --ignore <pattern>`        | 要忽略的文件或目录（可多次使用）             |
+| `-c, --console`                 | 在 Windows 上显示控制台窗口（默认：false）   |
+| `-r, --reinstall`               | 构建前仅重新安装生产依赖                     |
+| `-s, --skip-clean`              | 跳过清理旧的构建文件                         |
+| `-u, --upx <level>`             | 使用 UPX 压缩可执行文件，级别 0-9（默认：0） |
+| `-m, --meta, --metadata <file>` | 元数据文件路径（默认：无）                   |
 
 #### 示例
 
@@ -529,46 +562,55 @@ nexfep build -u 7
 
 ### Application
 
-| 方法/属性 | 参数 | 返回值 | 说明 |
-|-----------|------|--------|------|
-| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath? }` | Application | 创建应用实例 |
-| `windows` | / | WindowPool | 窗口池实例 |
-| `utils` | / | \_\_Utils | 工具方法（通知） |
-| `logger` | / | Logger | 日志实例 |
-| `createTray(options)` | 见 Tray 章节 | Tray | 创建系统托盘图标 |
-| `exit()` | 无 | void | 退出应用 |
+| 方法/属性               | 参数                                               | 返回值      | 说明             |
+| ----------------------- | -------------------------------------------------- | ----------- | ---------------- |
+| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath? }` | Application | 创建应用实例     |
+| `windows`               | /                                                  | WindowPool  | 窗口池实例       |
+| `utils`                 | /                                                  | \_\_Utils   | 工具方法（通知） |
+| `logger`                | /                                                  | Logger      | 日志实例         |
+| `createTray(options)`   | 见 Tray 章节                                       | Tray        | 创建系统托盘图标 |
+| `exit()`                | 无                                                 | void        | 退出应用         |
 
 ### WindowPool
 
-| 方法/属性 | 参数 | 返回值 | 说明 |
-|-----------|------|--------|------|
-| `createWindow(isShow?, isDecorated?)` | `isShow`: boolean（默认 true）, `isDecorated`: boolean（默认 true） | Promise\<Window> | 创建并获取一个窗口 |
-| `handle(event, callback)` | `event`: string, `callback`: (data: any) => any | 无 | 监听指定事件 |
-| `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any | 无 | 取消监听指定事件 |
-| `global` | / | Map\<string, any> | 全局变量 Map |
-| `closeWindow(window)` | `window`: Window | Promise\<void> | 关闭指定窗口并回收至池中 |
-| `onCustomMessage` | `(window: Window, data: string) => void` | 无 | 自定义消息回调函数 |
+| 方法/属性                             | 参数                                                                | 返回值            | 说明                     |
+| ------------------------------------- | ------------------------------------------------------------------- | ----------------- | ------------------------ |
+| `createWindow(isShow?, isDecorated?)` | `isShow`: boolean（默认 true）, `isDecorated`: boolean（默认 true） | Promise\<Window>  | 创建并获取一个窗口       |
+| `handle(event, callback)`             | `event`: string, `callback`: (data: any) => any                     | 无                | 监听指定事件             |
+| `unhandle(event, callback)`           | `event`: string, `callback`: (data: any) => any                     | 无                | 取消监听指定事件         |
+| `global`                              | /                                                                   | Map\<string, any> | 全局变量 Map             |
+| `closeWindow(window)`                 | `window`: Window                                                    | Promise\<void>    | 关闭指定窗口并回收至池中 |
+| `onCustomMessage`                     | `(window: Window, data: string) => void`                            | 无                | 自定义消息回调函数       |
 
 ### Window
 
-| 方法/属性 | 参数 | 返回值 | 说明 |
-|-----------|------|--------|------|
-| `loadURL(url)` | `url`: string — 要加载的网页地址 | Promise\<void> | 加载指定 URL |
-| `loadHTML(html)` | `html`: string — HTML 字符串 | Promise\<void> | 加载指定 HTML 内容 |
-| `show()` | 无 | void | 显示窗口 |
-| `hide()` | 无 | void | 隐藏窗口 |
-| `maximize()` | 无 | void | 最大化窗口 |
-| `unMaximize()` | 无 | void | 还原窗口（取消最大化） |
-| `minimize()` | 无 | void | 最小化窗口 |
-| `unMinimize()` | 无 | void | 还原窗口（取消最小化） |
-| `close()` | 无 | void | 关闭窗口并回收至池中 |
-| `setTitle(title)` | `title`: string | void | 设置窗口标题 |
-| `setDecorated(isDecorated)` | `isDecorated`: boolean | void | 设置窗口是否带边框和标题栏 |
-| `resizable(resizable)` | `resizable`: boolean | void | 设置窗口是否可调整大小 |
-| `setSize(width, height)` | `width`: number, `height`: number | void | 设置窗口尺寸（像素） |
-| `openDevTools()` | 无 | void | 打开开发者工具 |
-| `closeDevTools()` | 无 | void | 关闭开发者工具 |
-| `id` | 无 | number | 窗口唯一标识，自增编号 |
+| 方法/属性                   | 参数                              | 返回值                            | 说明                       |
+| --------------------------- | --------------------------------- | --------------------------------- | -------------------------- |
+| `loadURL(url)`              | `url`: string — 要加载的网页地址  | Promise\<void>                    | 加载指定 URL               |
+| `loadHTML(html)`            | `html`: string — HTML 字符串      | Promise\<void>                    | 加载指定 HTML 内容         |
+| `show()`                    | 无                                | void                              | 显示窗口                   |
+| `hide()`                    | 无                                | void                              | 隐藏窗口                   |
+| `maximize()`                | 无                                | void                              | 最大化窗口                 |
+| `unMaximize()`              | 无                                | void                              | 还原窗口（取消最大化）     |
+| `minimize()`                | 无                                | void                              | 最小化窗口                 |
+| `unMinimize()`              | 无                                | void                              | 还原窗口（取消最小化）     |
+| `close()`                   | 无                                | void                              | 关闭窗口并回收至池中       |
+| `setTitle(title)`           | `title`: string                   | void                              | 设置窗口标题               |
+| `setDecorated(isDecorated)` | `isDecorated`: boolean            | void                              | 设置窗口是否带边框和标题栏 |
+| `resizable(resizable)`      | `resizable`: boolean              | void                              | 设置窗口是否可调整大小     |
+| `setSize(width, height)`    | `width`: number, `height`: number | void                              | 设置窗口尺寸（像素）       |
+| `getSize()`                 | 无                                | { width: number, height: number } | 获取窗口尺寸（像素）       |
+| `setPosition(x, y)`         | `x`: number, `y`: number          | void                              | 设置窗口位置（像素）       |
+| `getPosition()`             | 无                                | { x: number, y: number }          | 获取窗口位置（像素）       |
+| `focus()`                   | 无                                | void                              | 窗口获取焦点               |
+| `isFocused()`               | 无                                | boolean                           | 是否有焦点                 |
+| `isMaximized()`             | 无                                | boolean                           | 是否最大化                 |
+| `isMinimized()`             | 无                                | boolean                           | 是否最小化                 |
+| `toggleMaximize()`          | 无                                | void                              | 切换最大化状态             |
+| `toggleMinimize()`          | 无                                | void                              | 切换最小化状态             |
+| `openDevTools()`            | 无                                | void                              | 打开开发者工具             |
+| `closeDevTools()`           | 无                                | void                              | 关闭开发者工具             |
+| `id`                        | 无                                | number                            | 窗口唯一标识，自增编号     |
 
 ## 开发
 

@@ -1,5 +1,5 @@
 const helpTexts = {
-    help: `
+  help: `
 Nexfep - A desktop application framework for Node.js
 
 This is a command-line tool for building desktop applications with Node.js.
@@ -16,7 +16,7 @@ Commands:
 See 'nexfep help <command>'
 to read about a specific subcommand.
 `,
-    build: `
+  build: `
 nexfep build - Build the application into a standalone executable
 
 Usage:
@@ -47,11 +47,11 @@ This command uses nexfpack (github.com/nexfteam/Nexfpack) to package
 your application into a standalone executable. For more details, see:
   https://github.com/nexfteam/Nexfpack
 `,
-}
-export default function help(command = 'help') {
-    if(command in helpTexts) {
-        console.log(helpTexts[command]);
-    } else {
-        console.log("Invalid command.");
-    }
+};
+export default function help(command = "help") {
+  if (command in helpTexts) {
+    console.log(helpTexts[command]);
+  } else {
+    console.log("Invalid command.");
+  }
 }
