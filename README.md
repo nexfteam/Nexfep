@@ -124,8 +124,8 @@ try {
 }
 // Focus the current instance when other instances acquire the lock
 locker.whenLost(() => {
-  if (!locker.isFocused()) {
-    locker.focus();
+  if (!win.isFocused()) {
+    win.focus();
   }
 });
 // Release the lock

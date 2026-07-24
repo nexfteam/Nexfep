@@ -124,8 +124,8 @@ try {
 }
 // 在其它实例抢锁时聚焦当前实例
 locker.whenLost(() => {
-  if (!locker.isFocused()) {
-    locker.focus();
+  if (!win.isFocused()) {
+    win.focus();
   }
 });
 // 释放锁
