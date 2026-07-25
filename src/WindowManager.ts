@@ -109,7 +109,7 @@ class Window {
   }
 }
 class WindowPool {
-  onCustomMessage: (window: Window, data: string) => void;
+  onCustomMessage: (window: Window, message: string, data: any) => void;
   app: Application;
   logger: Logger;
   private windows: Window[];
@@ -131,8 +131,8 @@ class WindowPool {
       }
       process.env.WEBVIEW2_USER_DATA_FOLDER = userDataDir;
     }
-    this.onCustomMessage = (window: Window, data: string) => {
-      console.log("Get Custom Message:", data, "from window", window.id);
+    this.onCustomMessage = (window: Window, message: string, data: any) => {
+      console.log("Get Custom Message:", message, data, "from window", window.id);
     };
     this.handlers = new Map();
     this.app = app;
@@ -222,11 +222,6 @@ class WindowPool {
         
         window.closeDevTools = () => {
             const MessageBody = { type: 'NexfepCloseDevTools' }
-            window.ipc.postMessage(JSON.stringify(MessageBody));
-        };
-
-        window.postMessage = (data) => {
-            const MessageBody = { type: 'CustomMessage', data: data }
             window.ipc.postMessage(JSON.stringify(MessageBody));
         };
 
@@ -363,8 +358,6 @@ class WindowPool {
             webview.openDevtools();
           } else if (dataObj.type == "NexfepCloseDevTools") {
             webview.closeDevtools();
-          } else if (dataObj.type == "CustomMessage") {
-            this.onCustomMessage(windowObj, dataObj.data);
           } else if (dataObj.type == "NexfepInvoke") {
             const handlers = this.handlers.get(dataObj.event) || [];
             handlers.forEach(async (handler) => {
@@ -395,6 +388,9 @@ class WindowPool {
               }
             });
           } else if (dataObj.type == "NexfepTell") {
+            if (dataObj.to == 0){
+              this.onCustomMessage(windowObj, dataObj.message, dataObj.data);
+            }
             this.windows.forEach(async (w) => {
               if (w.id == dataObj.to) {
                 w.webview.evaluateScript(`

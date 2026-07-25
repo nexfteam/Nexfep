@@ -240,35 +240,6 @@ window.setSize(800, 600);
 window.openDevTools();
 ```
 
-### 自定义消息
-
-#### 发送消息
-
-在页面中通过 `window.postMessage` 发送消息：
-
-```javascript
-window.postMessage({ hello: "world" });
-```
-
-**参数说明**
-
-- `data` — 任意类型的可序列化数据，会被序列化为 JSON 字符串后发送
-
-#### 监听消息
-
-在主进程中通过 `onCustomMessage` 回调接收消息：
-
-```typescript
-pool.onCustomMessage = (window, data) => {
-  console.log(`来自窗口 ${window.id} 的消息:`, data);
-};
-```
-
-**回调参数**
-
-- `window` — 发送消息的窗口对象
-- `data` — 消息内容，为对象类型（JSON 序列化后会自动通过 `JSON.parse` 转换为对象）
-
 ### 自定义事件
 
 #### 触发事件
@@ -404,6 +375,34 @@ window.addEventListener("custom-message", (event) => {
 ```javascript
 console.log("当前窗口 ID:", window.id);
 ```
+
+### 自定义消息
+
+#### 发送消息
+
+在页面中通过 `window.tell` 并指定 `to` 为 `0` 表示向主进程发送消息：
+
+```javascript
+window.tell(0, "custom-message", { hello: "world" });
+```
+
+#### 监听消息
+
+在主进程中通过 `onCustomMessage` 回调接收消息：
+
+```typescript
+pool.onCustomMessage = (window, message, data) => {
+  console.log(`[${message}]来自窗口 ${window.id} 的消息:`, data);
+};
+```
+
+**回调参数**
+
+- `window` — 发送消息的窗口对象
+- `message` — 事件名称
+- `data` — 消息内容，为对象类型（JSON 序列化后会自动通过 `JSON.parse` 转换为对象）
+
+我们更推荐使用 `window.invoke` 使页面与主进程通信，而非 `window.tell`。
 
 ### 窗口控制函数
 

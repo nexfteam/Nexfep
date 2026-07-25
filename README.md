@@ -238,35 +238,6 @@ window.setSize(800, 600);
 window.openDevTools();
 ```
 
-### Custom Messages
-
-#### Send Messages
-
-Send messages via `window.postMessage` in the page:
-
-```javascript
-window.postMessage({ hello: "world" });
-```
-
-**Parameters**
-
-- `data` — Any serializable data, will be serialized to JSON string before sending
-
-#### Listen for Messages
-
-Receive messages via `onCustomMessage` callback in the main process:
-
-```typescript
-pool.onCustomMessage = (window, data) => {
-  console.log(`Message from window ${window.id}:`, data);
-};
-```
-
-**Callback Parameters**
-
-- `window` — The window object that sent the message
-- `data` — Message content, an object type (automatically converted from JSON string via `JSON.parse`)
-
 ### Custom Events
 
 #### Invoke Events
@@ -402,6 +373,34 @@ Each window's ID can be accessed via `window.id`:
 ```javascript
 console.log("This window ID:", window.id);
 ```
+
+### Custom Messages
+
+#### Send Messages
+
+In the page, use `window.tell` with `to` 0 to send a message to the main process.
+
+```javascript
+window.tell(0, "custom-message", { hello: "world" });
+```
+
+#### Listen for Messages
+
+Receive messages via `onCustomMessage` callback in the main process:
+
+```typescript
+pool.onCustomMessage = (window, message, data) => {
+  console.log(`[${message}] from window ${window.id}:`, data);
+};
+```
+
+**Callback Parameters**
+
+- `window` — The window object that sent the message
+- `message` — Event name
+- `data` — Message content, an object type (automatically converted from JSON string via `JSON.parse`)
+
+We recommend using `window.invoke` to communicate between pages and the main process, instead of `window.tell`.
 
 ### Window Control Functions
 
