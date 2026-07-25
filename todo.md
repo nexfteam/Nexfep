@@ -111,7 +111,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 #### 子任务列表
 
-- [ ] 实现 `window.nexfep.onDropFiles(callback)` API
+- [ ] 实现 `window.onDropFiles(callback)` API
 - [ ] 返回拖入的文件路径列表
 - [ ] 支持拖入时显示拖放指示器（高亮区域）
 - [ ] 支持过滤拖入的文件类型（如只接受图片）
@@ -129,10 +129,10 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 #### 子任务列表
 
-- [ ] 实现 `window.nexfep.getSystemTheme()` API
-- [ ] 实现 `window.nexfep.onThemeChange(callback)` API
+- [ ] 实现 `window.getSystemTheme()` API
+- [ ] 实现 `window.onThemeChange(callback)` API
 - [ ] 跨平台支持（macOS、Windows、Linux）
-- [ ] 支持手动覆盖主题（`window.nexfep.setTheme('dark')`）
+- [ ] 支持手动覆盖主题（`window.setTheme('dark')`）
 - [ ] 支持读取系统强调色（Accent Color）
 - [ ] 支持系统主题变化时自动通知所有窗口
 
@@ -167,7 +167,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 > 适配层只是 Nexfep API 的薄封装，不添加任何额外逻辑。
 > 适配层不阻碍用户直接使用 `window.xxx`。
 > 适配层的发布独立于 Nexfep 核心，可单独升级。
-> 框架适配按需开发，优先支持 React，其他框架等用户需求。
+> 框架适配按需开发，其他框架等用户需求。
 
 ---
 
@@ -181,10 +181,10 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 #### 子任务列表
 
-- [ ] 实现 `window.nexfep.utils.registerShortcut` API
+- [ ] 实现 `app.utils.registerShortcut` API
 - [ ] 支持组合键（如 `CmdOrCtrl+Shift+P`）
 - [ ] 支持快捷键回调函数
-- [ ] 支持 `window.nexfep.utils.unregisterShortcut` 取消注册
+- [ ] 支持 `app.utils.unregisterShortcut` 取消注册
 - [ ] 支持快捷键冲突检测
 - [ ] 支持快捷键配置文件（`shortcuts.json`）
 - [ ] 支持动态更新快捷键（无需重启应用）
@@ -201,7 +201,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 #### 子任务列表
 
-- [ ] 实现 `window.nexfep.utils.setAutoStart(true/false)` API
+- [ ] 实现 `app.utils.setAutoStart(true/false)` API
 - [ ] 跨平台支持（macOS Login Items、Windows Registry、Linux .desktop）
 - [ ] 支持 `--hidden` 参数（开机启动时隐藏窗口）
 - [ ] 支持检测当前是否已开启开机自启动
@@ -218,9 +218,9 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 #### 子任务列表
 
-- [ ] 实现 `window.nexfep.utils.storage.set(key, value)` API（加密存储）
-- [ ] 实现 `window.nexfep.utils.storage.get(key)` API（解密读取）
-- [ ] 实现 `window.nexfep.utils.storage.delete(key)` API
+- [ ] 实现 `app/window.utils.storage.set(key, value)` API（加密存储）
+- [ ] 实现 `app/window.utils.storage.get(key)` API（解密读取）
+- [ ] 实现 `app/window.utils.storage.delete(key)` API
 - [ ] 跨平台支持（macOS Keychain、Windows Credential Manager、Linux libsecret）
 - [ ] 支持存储加密密钥的自定义（`storage.setKey()`）
 - [ ] 支持批量操作（`storage.setMultiple()` / `storage.getMultiple()`）
