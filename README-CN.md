@@ -240,6 +240,18 @@ window.setSize(800, 600);
 window.openDevTools();
 ```
 
+### 页面 API 的 Typescript 定义
+
+在前端的 `tsconfig.json` 中添加以下内容即可在前端页面中使用 `nexfep` 定义的 API 类型：
+
+```json
+{
+  "compilerOptions": {
+    "types": ["nexfep/frontend"]
+  }
+}
+```
+
 ### 自定义事件
 
 #### 触发事件

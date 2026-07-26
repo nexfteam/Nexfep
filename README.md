@@ -238,6 +238,18 @@ window.setSize(800, 600);
 window.openDevTools();
 ```
 
+### TypeScript Definitions for Frontend API
+
+Add the following content to your frontend's `tsconfig.json` to use the frontend API definitions:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["nexfep/frontend"]
+  }
+}
+```
+
 ### Custom Events
 
 #### Invoke Events
