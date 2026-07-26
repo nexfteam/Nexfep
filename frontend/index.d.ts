@@ -8,6 +8,8 @@ declare global {
     close: () => void
     minimize: () => void
     unminimize: () => void
+    toggleMaximize: () => void
+    toggleMinimize: () => void
     maximize: () => void
     unmaximize: () => void
     setTitle: (title: string) => void

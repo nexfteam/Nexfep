@@ -422,8 +422,10 @@ The following injected functions can be directly called in the page for window c
 window.close(); // Close window
 window.minimize(); // Minimize window
 window.unminimize(); // Restore minimized window
+window.toggleMinimize(); // Toggle minimized state
 window.maximize(); // Maximize window
 window.unmaximize(); // Restore maximized window
+window.toggleMaximize(); // Toggle maximized state
 window.setTitle("Title"); // Set window title
 window.openDevTools(); // Open developer tools
 window.closeDevTools(); // Close developer tools

@@ -1,6 +1,6 @@
 {
   "name": "nexfep",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "A desktop application framework based on @webviewjs/webview",
   "keywords": [
     "@webviewjs/webview",

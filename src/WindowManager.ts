@@ -85,7 +85,7 @@ class Window {
     return this.window.isFocused();
   }
   focus() {
-    this.window.setMinimized(false);
+    this.unMinimize();
     this.window.focus();
   }
   hide() {
@@ -208,6 +208,16 @@ class WindowPool {
         
         window.unmaximize = () => {
             const MessageBody = { type: 'NexfepUnMaximizeWindow' }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+        };
+
+        window.toggleMaximize = () => {
+            const MessageBody = { type: 'NexfepToggleMaximizeWindow' }
+            window.ipc.postMessage(JSON.stringify(MessageBody));
+        };
+
+        window.toggleMinimize = () => {
+            const MessageBody = { type: 'NexfepToggleMinimizeWindow' }
             window.ipc.postMessage(JSON.stringify(MessageBody));
         };
         window.setTitle = (title) => {
@@ -345,19 +355,23 @@ class WindowPool {
           } else if (dataObj.type == "NexfepCloseWindow") {
             this.closeWindow(windowObj);
           } else if (dataObj.type == "NexfepMinimizeWindow") {
-            window.setMinimized(true);
+            windowObj.minimize();
           } else if (dataObj.type == "NexfepUnMinimizeWindow") {
-            window.setMinimized(false);
+            windowObj.unMinimize();
           } else if (dataObj.type == "NexfepMaximizeWindow") {
-            window.setMaximized(true);
+            windowObj.maximize();
           } else if (dataObj.type == "NexfepUnMaximizeWindow") {
-            window.setMaximized(false);
+            windowObj.unMaximize();
+          }else if(dataObj.type == "NexfepToggleMaximizeWindow") {
+            windowObj.toggleMaximize();
+          }else if(dataObj.type == "NexfepToggleMinimizeWindow") {
+            windowObj.toggleMinimize();
           } else if (dataObj.type == "NexfepSetTitle") {
-            window.setTitle(dataObj.title);
+            windowObj.setTitle(dataObj.title);
           } else if (dataObj.type == "NexfepOpenDevTools") {
-            webview.openDevtools();
+            windowObj.openDevTools();
           } else if (dataObj.type == "NexfepCloseDevTools") {
-            webview.closeDevtools();
+            windowObj.closeDevTools();
           } else if (dataObj.type == "NexfepInvoke") {
             const handlers = this.handlers.get(dataObj.event) || [];
             handlers.forEach(async (handler) => {

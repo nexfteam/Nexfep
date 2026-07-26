@@ -424,8 +424,10 @@ pool.onCustomMessage = (window, message, data) => {
 window.close(); // 关闭窗口
 window.minimize(); // 最小化窗口
 window.unminimize(); // 还原最小化的窗口
+window.toggleMinimize(); // 切换最小化状态
 window.maximize(); // 最大化窗口
 window.unmaximize(); // 还原最大化的窗口
+window.toggleMaximize(); // 切换最大化状态
 window.setTitle("标题"); // 设置窗口标题
 window.openDevTools(); // 打开开发者工具
 window.closeDevTools(); // 关闭开发者工具
