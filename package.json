@@ -1,6 +1,6 @@
 {
   "name": "nexfep",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "A desktop application framework based on @webviewjs/webview",
   "keywords": [
     "@webviewjs/webview",
@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@nexfteam/single-instance": "^0.0.7",
-    "@webviewjs/webview": "0.4.0"
+    "@webviewjs/webview": "0.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
