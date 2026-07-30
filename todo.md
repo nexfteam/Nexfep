@@ -6,6 +6,12 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 ---
 
+只包含大型功能添加计划，不包含 bug 修复、风格修改、API 微调等。
+
+随时可能根据实际情况进行修改。
+
+---
+
 ## Major
 
 暂无

@@ -1,6 +1,6 @@
 {
   "name": "nexfep",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "description": "A desktop application framework based on @webviewjs/webview",
   "keywords": [
     "@webviewjs/webview",
@@ -19,12 +19,6 @@
   "repository": "https://github.com/nexfteam/Nexfep",
   "bin": {
     "nexfep": "cli/index.mjs"
-  },
-  "typesVersions": {
-    "*": {
-      ".": ["./index.d.ts"],
-      "frontend": ["./frontend/index.d.ts"]
-    }
   },
   "files": [
     "index.js",
@@ -47,10 +41,22 @@
     "src/Logger.d.ts",
     "src/SingleInstance.js",
     "src/SingleInstance.d.ts",
+    "src/Icon.js",
+    "src/Icon.d.ts",
     "frontend/index.d.ts"
   ],
   "type": "module",
   "main": "./index.js",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./index.d.ts"
+      ],
+      "frontend": [
+        "./frontend/index.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "compile": "tsc",
     "fmt": "oxfmt --check",

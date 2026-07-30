@@ -41,7 +41,10 @@ import { Application } from "nexfep";
 
 const app = new Application();
 
-const window = await app.windows.createWindow(true, false);
+const window = await app.windows.createWindow({
+  visible: true,
+  decoration: false,
+});
 
 await window.loadHTML("<h1 nexfep-area-drag>Hello Nexfep!</h1>");
 ```
@@ -81,11 +84,37 @@ const app = new Application({ LogFilePath: "./app.log" });
 - `createLocker(appName)` — Create an application instance lock to prevent multiple instances
 - `exit()` — Exit the application
 
+### Icon
+
+`Icon` represents an image resource that can be used as a window icon, tray icon, etc.
+
+```typescript
+import { Icon } from "nexfep";
+
+// Create from file path
+const icon = Icon.from("./icon.png");
+
+// Create from Buffer or Uint8Array
+const icon = Icon.from(buffer);
+const icon = Icon.from(uint8Array);
+
+// Create from an object containing data/width/height
+const icon = Icon.from({ data: buffer, width: 64, height: 64 });
+const icon = Icon.from({ data: uint8Array, width: 64, height: 64 });
+```
+
+**Static Methods**
+
+| Method             | Parameters                                                                                | Return Value | Description              |
+| ------------------ | ----------------------------------------------------------------------------------------- | ------------ | ------------------------ |
+| `Icon.from(input)` | `string` \| `Buffer` \| `Uint8Array` \| `{ data: Uint8Array \| Buffer, width?, height? }` | `Icon`       | Creates an icon instance |
+
 ### Logger
 
 The logger supports both file output and colored console output. It can be accessed via `app.logger`.
 
 ```typescript
+app.logger.clear();
 app.logger.log("Hello World");
 app.logger.error("An error occurred");
 app.logger.warn("Warning message");
@@ -95,13 +124,14 @@ app.logger.debug("Debug message");
 
 **Methods**
 
-| Method           | Description                    |
-| ---------------- | ------------------------------ |
-| `log(message)`   | Log a message                  |
-| `error(message)` | Log an error message (red)     |
-| `warn(message)`  | Log a warning message (yellow) |
-| `info(message)`  | Log an info message (blue)     |
-| `debug(message)` | Log a debug message (gray)     |
+| Method           | Description                                                                    |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `clear()`        | Clear the log file (only takes effect when the `LogFilePath` parameter is set) |
+| `log(message)`   | Log a message                                                                  |
+| `error(message)` | Log an error message (red)                                                     |
+| `warn(message)`  | Log a warning message (yellow)                                                 |
+| `info(message)`  | Log an info message (blue)                                                     |
+| `debug(message)` | Log a debug message (gray)                                                     |
 
 Each method accepts either a string or an array of strings.
 
@@ -143,16 +173,14 @@ locker.unlock();
 Create and manage system tray icons with context menus via `app.createTray()`.
 
 ```typescript
-import { readFileSync } from "fs";
+import { Icon } from "nexfep";
+
+const icon = Icon.from("./icon.png");
 
 const tray = app.createTray({
   id: "my-tray",
   tooltip: "My App",
-  icon: {
-    data: readFileSync("./icon.png"),
-    width: 32,
-    height: 32,
-  },
+  icon: icon, // Icon instance
   menuItems: [
     { id: "show", label: "Show Window" },
     { id: "quit", label: "Quit" },
@@ -160,29 +188,19 @@ const tray = app.createTray({
 });
 ```
 
-The `icon` field accepts a `TrayIconImage` object:
-
-```typescript
-interface TrayIconImage {
-  data: Buffer; // Image binary data
-  width?: number; // Optional width
-  height?: number; // Optional height
-}
-```
-
 **Methods**
 
-| Method                           | Description                                                        |
-| -------------------------------- | ------------------------------------------------------------------ |
-| `addMenuItem(item)`              | Add a menu item                                                    |
-| `removeMenuItem(id)`             | Remove a menu item by ID                                           |
-| `setMenuItems(items)`            | Replace all menu items                                             |
-| `setIcon(icon, width?, height?)` | Change the tray icon (raw pixel data as `Uint8Array` / `number[]`) |
-| `setTooltip(tooltip)`            | Change the tooltip text                                            |
-| `on(event, callback)`            | Listen for tray events (e.g. `'click'`)                            |
-| `show()`                         | Show the tray icon                                                 |
-| `hide()`                         | Hide the tray icon                                                 |
-| `destroy()`                      | Destroy the tray icon                                              |
+| Method                | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `addMenuItem(item)`   | Add a menu item                                  |
+| `removeMenuItem(id)`  | Remove a menu item by ID                         |
+| `setMenuItems(items)` | Replace all menu items                           |
+| `setIcon(icon)`       | Change the tray icon, accepts an `Icon` instance |
+| `setTooltip(tooltip)` | Change the tooltip text                          |
+| `on(event, callback)` | Listen for tray events (e.g. `'click'`)          |
+| `show()`              | Show the tray icon                               |
+| `hide()`              | Hide the tray icon                               |
+| `destroy()`           | Destroy the tray icon                            |
 
 ```typescript
 tray.on("click", () => {
@@ -197,13 +215,14 @@ tray.setTooltip("Nexfep App");
 Send desktop notifications via `app.utils.notify()`.
 
 ```typescript
-const notification = app.utils.notify("Title", "Notification body");
+const notification = app.utils.notify("Title", { body: "Notification body" });
 ```
 
 **Parameters**
 
 - `title` — Notification title
-- `body` (optional) — Notification body text
+- `options` (optional) — Configuration object
+  - `body` — Notification body text
 
 ### Window Pool
 
@@ -216,13 +235,38 @@ const pool = app.windows;
 ### Window Creation
 
 ```typescript
-const win = await pool.createWindow(true, false);
+// Use all defaults by omitting parameters
+const win = await pool.createWindow();
+
+// Pass partial parameters
+const win = await pool.createWindow({
+  visible: true,
+  title: "My App",
+});
+
+// All parameters
+const win = await pool.createWindow({
+  visible: true, // Whether to show immediately, default true
+  decoration: true, // Whether to use system decorations, default true
+  title: "My App", // Window title, default "Nexfep Window"
+  icon: iconInstance, // Window icon, Icon instance, optional
+  resizable: true, // Whether the window is resizable, default true
+  width: 800, // Window width, default 800
+  height: 600, // Window height, default 600
+});
 ```
 
 **Parameters**
 
-- `isShow` (boolean, default `true`) — Whether to immediately show the window
-- `isDecorated` (boolean, default `true`) — Whether to use system window decorations. When set to `false`, the window has no border and requires a custom title bar
+| Option       | Type      | Default           | Description                                                                                                      |
+| ------------ | --------- | ----------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `visible`    | `boolean` | `true`            | Whether to immediately show the window                                                                           |
+| `decoration` | `boolean` | `true`            | Whether to use system window decorations. When `false`, the window has no border and requires a custom title bar |
+| `title`      | `string`  | `"Nexfep Window"` | Window title                                                                                                     |
+| `icon`       | `Icon`    | none              | Window icon                                                                                                      |
+| `resizable`  | `boolean` | `true`            | Whether the window is resizable                                                                                  |
+| `width`      | `number`  | `800`             | Window width in pixels                                                                                           |
+| `height`     | `number`  | `600`             | Window height in pixels                                                                                          |
 
 ### Window Operations
 
@@ -584,44 +628,47 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 
 ### WindowPool
 
-| Method/Property                       | Parameters                                                              | Return Value      | Description                                            |
-| ------------------------------------- | ----------------------------------------------------------------------- | ----------------- | ------------------------------------------------------ |
-| `createWindow(isShow?, isDecorated?)` | `isShow`: boolean (default true), `isDecorated`: boolean (default true) | Promise\<Window>  | Creates and returns a window                           |
-| `handle(event, callback)`             | `event`: string, `callback`: (data: any) => any                         | None              | Listens for the specified event                        |
-| `unhandle(event, callback)`           | `event`: string, `callback`: (data: any) => any                         | None              | Removes the specified event listener                   |
-| `global`                              | /                                                                       | Map\<string, any> | A global variable map                                  |
-| `closeWindow(window)`                 | `window`: Window                                                        | Promise\<void>    | Closes the specified window and returns it to the pool |
-| `onCustomMessage`                     | `(window: Window, data: string) => void`                                | None              | Custom message callback                                |
+| Method/Property             | Parameters                                             | Return Value      | Description                                            |
+| --------------------------- | ------------------------------------------------------ | ----------------- | ------------------------------------------------------ |
+| `createWindow(options?)`    | Optional parameters, see Window Creation section above | Promise\<Window>  | Creates and returns a window                           |
+| `handle(event, callback)`   | `event`: string, `callback`: (data: any) => any        | None              | Listens for the specified event                        |
+| `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any        | None              | Removes the specified event listener                   |
+| `global`                    | /                                                      | Map\<string, any> | A global variable map                                  |
+| `closeWindow(window)`       | `window`: Window                                       | Promise\<void>    | Closes the specified window and returns it to the pool |
+| `onCustomMessage`           | `(window: Window, data: string) => void`               | None              | Custom message callback                                |
 
 ### Window
 
-| Method/Property             | Parameters                        | Return Value                      | Description                                       |
-| --------------------------- | --------------------------------- | --------------------------------- | ------------------------------------------------- |
-| `loadURL(url)`              | `url`: string — URL to load       | Promise\<void>                    | Loads the specified URL                           |
-| `loadHTML(html)`            | `html`: string — HTML string      | Promise\<void>                    | Loads the specified HTML content                  |
-| `show()`                    | None                              | void                              | Shows the window                                  |
-| `hide()`                    | None                              | void                              | Hides the window                                  |
-| `maximize()`                | None                              | void                              | Maximizes the window                              |
-| `unMaximize()`              | None                              | void                              | Restores the window (cancels maximize)            |
-| `minimize()`                | None                              | void                              | Minimizes the window                              |
-| `unMinimize()`              | None                              | void                              | Restores the window (cancels minimize)            |
-| `close()`                   | None                              | void                              | Closes the window and returns to pool             |
-| `setTitle(title)`           | `title`: string                   | void                              | Sets the window title                             |
-| `setDecorated(isDecorated)` | `isDecorated`: boolean            | void                              | Sets whether the window has borders and title bar |
-| `resizable(resizable)`      | `resizable`: boolean              | void                              | Sets whether the window is resizable              |
-| `setSize(width, height)`    | `width`: number, `height`: number | void                              | Sets the window size in pixels                    |
-| `getSize()`                 | None                              | { width: number, height: number } | Gets the window size in pixels                    |
-| `setPosition(x, y)`         | `x`: number, `y`: number          | void                              | Sets the window position in pixels                |
-| `getPosition()`             | None                              | { x: number, y: number }          | Gets the window position in pixels                |
-| `isMaximized()`             | None                              | boolean                           | Whether the window is maximized                   |
-| `isMinimized()`             | None                              | boolean                           | Whether the window is minimized                   |
-| `toggleMaximize()`          | None                              | void                              | Toggles the window maximized state                |
-| `toggleMinimize()`          | None                              | void                              | Toggles the window minimized state                |
-| `isFocused()`               | None                              | boolean                           | Whether the window has focused                    |
-| `focus()`                   | None                              | void                              | Focuses the window                                |
-| `openDevTools()`            | None                              | void                              | Opens developer tools                             |
-| `closeDevTools()`           | None                              | void                              | Closes developer tools                            |
-| `id`                        | None                              | number                            | Unique window identifier, auto-incrementing       |
+| Method/Property                         | Parameters                                                        | Return Value                      | Description                                                                                        |
+| --------------------------------------- | ----------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `loadURL(url)`                          | `url`: string — URL to load                                       | Promise\<void>                    | Loads the specified URL                                                                            |
+| `loadHTML(html)`                        | `html`: string — HTML string                                      | Promise\<void>                    | Loads the specified HTML content                                                                   |
+| `show()`                                | None                                                              | void                              | Shows the window                                                                                   |
+| `hide()`                                | None                                                              | void                              | Hides the window                                                                                   |
+| `maximize()`                            | None                                                              | void                              | Maximizes the window                                                                               |
+| `unMaximize()`                          | None                                                              | void                              | Restores the window (cancels maximize)                                                             |
+| `minimize()`                            | None                                                              | void                              | Minimizes the window                                                                               |
+| `unMinimize()`                          | None                                                              | void                              | Restores the window (cancels minimize)                                                             |
+| `close()`                               | None                                                              | void                              | Closes the window and returns to pool                                                              |
+| `setTitle(title)`                       | `title`: string                                                   | void                              | Sets the window title                                                                              |
+| `setDecorated(isDecorated)`             | `isDecorated`: boolean                                            | void                              | Sets whether the window has borders and title bar                                                  |
+| `setResizable(resizable)`               | `resizable`: boolean                                              | void                              | Sets whether the window is resizable                                                               |
+| `setLevel(level)`                       | `level`: `-1` \| `0` \| `1`                                       | void                              | Sets window level: -1=bottom, 0=normal, 1=top                                                      |
+| `setFullScreen(isFullScreen, options?)` | `isFullScreen`: `boolean`, `options?`: `{ borderless?: boolean }` | void                              | Sets fullscreen mode. `borderless: true` for borderless fullscreen, otherwise exclusive fullscreen |
+| `setIcon(icon)`                         | `icon`: `Icon`                                                    | void                              | Sets the window icon                                                                               |
+| `setSize(width, height)`                | `width`: number, `height`: number                                 | void                              | Sets the window size in pixels                                                                     |
+| `getSize()`                             | None                                                              | { width: number, height: number } | Gets the window size in pixels                                                                     |
+| `setPosition(x, y)`                     | `x`: number, `y`: number                                          | void                              | Sets the window position in pixels                                                                 |
+| `getPosition()`                         | None                                                              | { x: number, y: number }          | Gets the window position in pixels                                                                 |
+| `focus()`                               | None                                                              | void                              | Focuses the window                                                                                 |
+| `isFocused()`                           | None                                                              | boolean                           | Whether the window has focus                                                                       |
+| `isMaximized()`                         | None                                                              | boolean                           | Whether the window is maximized                                                                    |
+| `isMinimized()`                         | None                                                              | boolean                           | Whether the window is minimized                                                                    |
+| `toggleMaximize()`                      | None                                                              | void                              | Toggles the window maximized state                                                                 |
+| `toggleMinimize()`                      | None                                                              | void                              | Toggles the window minimized state                                                                 |
+| `openDevTools()`                        | None                                                              | void                              | Opens developer tools                                                                              |
+| `closeDevTools()`                       | None                                                              | void                              | Closes developer tools                                                                             |
+| `id`                                    | None                                                              | number                            | Unique window identifier, auto-incrementing                                                        |
 
 ## Development
 

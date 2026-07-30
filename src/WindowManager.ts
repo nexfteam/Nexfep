@@ -1,9 +1,9 @@
 import { Application, BrowserWindow, Webview } from "@webviewjs/webview";
 import { Logger } from "./Logger.js";
+import { Icon } from "./Icon.js";
 import os from "os";
 import path from "path";
 import fs from "fs";
-
 class Window {
   window: BrowserWindow;
   webview: Webview;
@@ -21,6 +21,32 @@ class Window {
     this.isDecorated = false;
     this.id = id;
   }
+  setLevel(level: -1 | 0 | 1) {
+    if (level == -1) {
+      this.window.setAlwaysOnTop(false);
+      this.window.setAlwaysOnBottom(true);
+      return;
+    } else if (level == 0) {
+      this.window.setAlwaysOnTop(false);
+      this.window.setAlwaysOnBottom(false);
+      return;
+    } else if (level == 1) {
+      this.window.setAlwaysOnTop(true);
+      this.window.setAlwaysOnBottom(false);
+      return;
+    }
+  }
+  setFullScreen(isFullScreen: boolean, options?: { borderless?: boolean }) {
+    if (isFullScreen) {
+      if (options?.borderless) {
+        this.window.setFullscreen(1);
+      } else {
+        this.window.setFullscreen(0);
+      }
+    } else {
+      this.window.setFullscreen(null);
+    }
+  }
   setDecorated(isDecorated: boolean) {
     this.window.setDecorations(isDecorated);
     this.isDecorated = isDecorated;
@@ -28,7 +54,7 @@ class Window {
   setTitle(title: string) {
     this.window.setTitle(title);
   }
-  resizable(resizable: boolean) {
+  setResizable(resizable: boolean) {
     this.window.setResizable(resizable);
   }
   maximize() {
@@ -68,6 +94,9 @@ class Window {
   }
   closeDevTools() {
     this.webview.closeDevtools();
+  }
+  setIcon(icon: Icon) {
+    this.window.setWindowIcon(icon.data, icon.width, icon.height);
   }
   setSize(width: number, height: number) {
     this.window.setSize(width, height);
@@ -329,7 +358,7 @@ class WindowPool {
     return await new Promise((resolve) => {
       setImmediate(() => {
         const window = this.app.createBrowserWindow({
-          title: "Nexfep",
+          title: "Nexfep Window",
           visible: false,
           focused: false,
         });
@@ -362,9 +391,9 @@ class WindowPool {
             windowObj.maximize();
           } else if (dataObj.type == "NexfepUnMaximizeWindow") {
             windowObj.unMaximize();
-          }else if(dataObj.type == "NexfepToggleMaximizeWindow") {
+          } else if (dataObj.type == "NexfepToggleMaximizeWindow") {
             windowObj.toggleMaximize();
-          }else if(dataObj.type == "NexfepToggleMinimizeWindow") {
+          } else if (dataObj.type == "NexfepToggleMinimizeWindow") {
             windowObj.toggleMinimize();
           } else if (dataObj.type == "NexfepSetTitle") {
             windowObj.setTitle(dataObj.title);
@@ -402,7 +431,7 @@ class WindowPool {
               }
             });
           } else if (dataObj.type == "NexfepTell") {
-            if (dataObj.to == 0){
+            if (dataObj.to == 0) {
               this.onCustomMessage(windowObj, dataObj.message, dataObj.data);
             }
             this.windows.forEach(async (w) => {
@@ -428,17 +457,31 @@ class WindowPool {
       });
     });
   }
-  async createWindow(isShow: boolean = true, isDecorated: boolean = true) {
+  async createWindow(options?: {
+    visible?: boolean;
+    decoration?: boolean;
+    title?: string;
+    icon?: Icon;
+    resizable?: boolean;
+    width?: number;
+    height?: number;
+  }) {
     const window =
       this.windows.find((w) => w.isOpen === false) || (await this.__createNewWindowObj());
     this.freeWindowCount--;
     if (window) {
       window.isOpen = true;
-      window.isShow = isShow;
-      window.setDecorated(isDecorated);
-      if (isShow) {
+      window.isShow = options?.visible ?? true;
+      window.setDecorated(options?.decoration ?? true);
+      if (options?.visible ?? true) {
         window.show();
       }
+      window.setTitle(options?.title ?? "Nexfep Window");
+      if (options?.icon) {
+        window.setIcon(options?.icon);
+      }
+      window.setResizable(options?.resizable ?? true);
+      window.setSize(options?.width ?? 800, options?.height ?? 600);
     }
     if (this.freeWindowCount == 0) {
       this.__createNewWindowObj();

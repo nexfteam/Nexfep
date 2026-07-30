@@ -1,15 +1,16 @@
-import { Application as WebviewApplication, TrayIconImage, Notification } from "@webviewjs/webview";
+import { Application as WebviewApplication, Notification } from "@webviewjs/webview";
 import { WindowPool } from "./WindowManager.js";
 import { Tray } from "./Tray.js";
 import { Logger } from "./Logger.js";
 import { Locker } from "./SingleInstance.js";
+import { Icon } from "./Icon.js";
 class __Utils {
   app: WebviewApplication;
   constructor(app: WebviewApplication) {
     this.app = app;
   }
-  notify(title: string, body?: string) {
-    const notification = new Notification(title, { body });
+  notify(title: string, options?: { body?: string }) {
+    const notification = new Notification(title, { body: options?.body });
     return notification;
   }
 }
@@ -33,7 +34,7 @@ class Application {
   createTray(options: {
     id: string;
     tooltip: string;
-    icon: TrayIconImage | undefined;
+    icon?: Icon;
     menuItems: Array<{ id: string; label: string }>;
   }) {
     return new Tray(this.app, options);
@@ -46,4 +47,4 @@ class Application {
   }
 }
 
-export { Application };
+export { Application, Icon };

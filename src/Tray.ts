@@ -1,5 +1,5 @@
-import { Application, TrayIcon, TrayIconImage } from "@webviewjs/webview";
-
+import { Application, TrayIcon } from "@webviewjs/webview";
+import { Icon } from "./Icon.js";
 class Tray {
   app: Application;
   tray: TrayIcon;
@@ -10,7 +10,7 @@ class Tray {
     options: {
       id: string;
       tooltip: string;
-      icon: TrayIconImage | undefined;
+      icon?: Icon;
       menuItems: Array<{ id: string; label: string }>;
     },
   ) {
@@ -20,7 +20,7 @@ class Tray {
     this.tray = app.createTrayIcon({
       id: options.id,
       tooltip: options.tooltip,
-      icon: options.icon,
+      icon: options.icon?.toTrayIconImage(),
       menu: {
         items: this.menuItems,
       },
@@ -46,13 +46,9 @@ class Tray {
     this.menuItems = items;
     this.tray.setMenu({ items: this.menuItems });
   }
-  setIcon(
-    icon: Uint8Array<ArrayBuffer | SharedArrayBuffer> | number[],
-    width?: number | null | undefined,
-    height?: number | null | undefined,
-  ) {
+  setIcon(icon: Icon) {
     this.__ErrorWhenDestroyed();
-    this.tray.setIcon(icon, width, height);
+    this.tray.setIcon(icon.data, icon.width, icon.height);
   }
   on(event: string, callback: (event: any) => void) {
     this.__ErrorWhenDestroyed();

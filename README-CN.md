@@ -41,7 +41,10 @@ import { Application } from "nexfep";
 
 const app = new Application();
 
-const window = await app.windows.createWindow(true, false);
+const window = await app.windows.createWindow({
+  visible: true,
+  decoration: false,
+});
 
 await window.loadHTML("<h1 nexfep-area-drag>Hello Nexfep!</h1>");
 ```
@@ -81,11 +84,37 @@ const app = new Application({ LogFilePath: "./app.log" });
 - `createLocker(appName)` — 创建应用实例锁，防止多个实例运行
 - `exit()` — 退出应用
 
+### Icon
+
+`Icon` 用于表示图片资源，可被用作窗口图标、托盘图标等。
+
+```typescript
+import { Icon } from "nexfep";
+
+// 从文件路径创建
+const icon = Icon.from("./icon.png");
+
+// 从 Buffer 或 Uint8Array 创建
+const icon = Icon.from(buffer);
+const icon = Icon.from(uint8Array);
+
+// 从包含 data/width/height 的对象创建
+const icon = Icon.from({ data: buffer, width: 64, height: 64 });
+const icon = Icon.from({ data: uint8Array, width: 64, height: 64 });
+```
+
+**静态方法**
+
+| 方法               | 参数                                                                                      | 返回值 | 说明             |
+| ------------------ | ----------------------------------------------------------------------------------------- | ------ | ---------------- |
+| `Icon.from(input)` | `string` \| `Buffer` \| `Uint8Array` \| `{ data: Uint8Array \| Buffer, width?, height? }` | `Icon` | 创建一个图标实例 |
+
 ### Logger
 
 Logger 支持文件输出和彩色控制台输出，可通过 `app.logger` 访问。
 
 ```typescript
+app.logger.clear();
 app.logger.log("Hello World");
 app.logger.error("发生错误");
 app.logger.warn("警告信息");
@@ -95,13 +124,14 @@ app.logger.debug("调试信息");
 
 **方法**
 
-| 方法             | 说明                 |
-| ---------------- | -------------------- |
-| `log(message)`   | 记录日志             |
-| `error(message)` | 记录错误日志（红色） |
-| `warn(message)`  | 记录警告日志（黄色） |
-| `info(message)`  | 记录提示日志（蓝色） |
-| `debug(message)` | 记录调试日志（灰色） |
+| 方法             | 说明                                              |
+| ---------------- | ------------------------------------------------- |
+| `clear()`        | 清空日志文件（仅在设置了`LogFilePath`参数时生效） |
+| `log(message)`   | 记录日志                                          |
+| `error(message)` | 记录错误日志（红色）                              |
+| `warn(message)`  | 记录警告日志（黄色）                              |
+| `info(message)`  | 记录提示日志（蓝色）                              |
+| `debug(message)` | 记录调试日志（灰色）                              |
 
 每个方法接受字符串或字符串数组作为参数。
 
@@ -145,16 +175,14 @@ locker.unlock();
 通过 `app.createTray()` 创建和管理系统托盘图标及右键菜单。
 
 ```typescript
-import { readFileSync } from "fs";
+import { Icon } from "nexfep";
+
+const icon = Icon.from("./icon.png");
 
 const tray = app.createTray({
   id: "my-tray",
   tooltip: "我的应用",
-  icon: {
-    data: readFileSync("./icon.png"),
-    width: 32,
-    height: 32,
-  },
+  icon: icon, // Icon 实例
   menuItems: [
     { id: "show", label: "显示窗口" },
     { id: "quit", label: "退出" },
@@ -162,29 +190,19 @@ const tray = app.createTray({
 });
 ```
 
-`icon` 字段接受 `TrayIconImage` 对象：
-
-```typescript
-interface TrayIconImage {
-  data: Buffer; // 图片二进制数据
-  width?: number; // 可选宽度
-  height?: number; // 可选高度
-}
-```
-
 **方法**
 
-| 方法                             | 描述                                                   |
-| -------------------------------- | ------------------------------------------------------ |
-| `addMenuItem(item)`              | 添加菜单项                                             |
-| `removeMenuItem(id)`             | 按 ID 删除菜单项                                       |
-| `setMenuItems(items)`            | 替换所有菜单项                                         |
-| `setIcon(icon, width?, height?)` | 更改托盘图标（原始像素数据 `Uint8Array` / `number[]`） |
-| `setTooltip(tooltip)`            | 更改悬停提示文本                                       |
-| `on(event, callback)`            | 监听托盘事件（如 `'click'`）                           |
-| `show()`                         | 显示托盘图标                                           |
-| `hide()`                         | 隐藏托盘图标                                           |
-| `destroy()`                      | 销毁托盘图标                                           |
+| 方法                  | 描述                           |
+| --------------------- | ------------------------------ |
+| `addMenuItem(item)`   | 添加菜单项                     |
+| `removeMenuItem(id)`  | 按 ID 删除菜单项               |
+| `setMenuItems(items)` | 替换所有菜单项                 |
+| `setIcon(icon)`       | 更改托盘图标，接受 `Icon` 实例 |
+| `setTooltip(tooltip)` | 更改悬停提示文本               |
+| `on(event, callback)` | 监听托盘事件（如 `'click'`）   |
+| `show()`              | 显示托盘图标                   |
+| `hide()`              | 隐藏托盘图标                   |
+| `destroy()`           | 销毁托盘图标                   |
 
 ```typescript
 tray.on("click", () => {
@@ -199,13 +217,14 @@ tray.setTooltip("Nexfep 应用");
 通过 `app.utils.notify()` 发送桌面通知。
 
 ```typescript
-const notification = app.utils.notify("标题", "通知内容");
+const notification = app.utils.notify("标题", { body: "通知内容" });
 ```
 
 **参数**
 
 - `title` — 通知标题
-- `body`（可选）— 通知正文
+- `options`（可选）— 配置对象
+  - `body` — 通知正文
 
 ### 窗口池
 
@@ -218,13 +237,38 @@ const pool = app.windows;
 ### 窗口创建
 
 ```typescript
-const win = await pool.createWindow(true, false);
+// 不传参数使用全部默认值
+const win = await pool.createWindow();
+
+// 传入部分参数
+const win = await pool.createWindow({
+  visible: true,
+  title: "我的应用",
+});
+
+// 全部参数
+const win = await pool.createWindow({
+  visible: true, // 是否立即显示，默认 true
+  decoration: true, // 是否使用系统装饰，默认 true
+  title: "我的应用", // 窗口标题，默认 "Nexfep Window"
+  icon: iconInstance, // 窗口图标，Icon 实例，可选
+  resizable: true, // 是否可调整大小，默认 true
+  width: 800, // 窗口宽度，默认 800
+  height: 600, // 窗口高度，默认 600
+});
 ```
 
 **参数说明**
 
-- `isShow`（布尔值，默认 `true`）— 是否立即显示窗口
-- `isDecorated`（布尔值，默认 `true`）— 是否使用系统窗口装饰。设为 `false` 时，窗口无边框，需要自定义标题栏
+| 选项         | 类型      | 默认值            | 说明                                                                |
+| ------------ | --------- | ----------------- | ------------------------------------------------------------------- |
+| `visible`    | `boolean` | `true`            | 是否立即显示窗口                                                    |
+| `decoration` | `boolean` | `true`            | 是否使用系统窗口装饰。设为 `false` 时，窗口无边框，需要自定义标题栏 |
+| `title`      | `string`  | `"Nexfep Window"` | 窗口标题                                                            |
+| `icon`       | `Icon`    | 无                | 窗口图标                                                            |
+| `resizable`  | `boolean` | `true`            | 窗口是否可调整大小                                                  |
+| `width`      | `number`  | `800`             | 窗口宽度（像素）                                                    |
+| `height`     | `number`  | `600`             | 窗口高度（像素）                                                    |
 
 ### 窗口操作
 
@@ -586,44 +630,47 @@ nexfep build -u 7
 
 ### WindowPool
 
-| 方法/属性                             | 参数                                                                | 返回值            | 说明                     |
-| ------------------------------------- | ------------------------------------------------------------------- | ----------------- | ------------------------ |
-| `createWindow(isShow?, isDecorated?)` | `isShow`: boolean（默认 true）, `isDecorated`: boolean（默认 true） | Promise\<Window>  | 创建并获取一个窗口       |
-| `handle(event, callback)`             | `event`: string, `callback`: (data: any) => any                     | 无                | 监听指定事件             |
-| `unhandle(event, callback)`           | `event`: string, `callback`: (data: any) => any                     | 无                | 取消监听指定事件         |
-| `global`                              | /                                                                   | Map\<string, any> | 全局变量 Map             |
-| `closeWindow(window)`                 | `window`: Window                                                    | Promise\<void>    | 关闭指定窗口并回收至池中 |
-| `onCustomMessage`                     | `(window: Window, data: string) => void`                            | 无                | 自定义消息回调函数       |
+| 方法/属性                   | 参数                                            | 返回值            | 说明                     |
+| --------------------------- | ----------------------------------------------- | ----------------- | ------------------------ |
+| `createWindow(options?)`    | 可选参数，见上文窗口创建参数说明                | Promise\<Window>  | 创建并获取一个窗口       |
+| `handle(event, callback)`   | `event`: string, `callback`: (data: any) => any | 无                | 监听指定事件             |
+| `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any | 无                | 取消监听指定事件         |
+| `global`                    | /                                               | Map\<string, any> | 全局变量 Map             |
+| `closeWindow(window)`       | `window`: Window                                | Promise\<void>    | 关闭指定窗口并回收至池中 |
+| `onCustomMessage`           | `(window: Window, data: string) => void`        | 无                | 自定义消息回调函数       |
 
 ### Window
 
-| 方法/属性                   | 参数                              | 返回值                            | 说明                       |
-| --------------------------- | --------------------------------- | --------------------------------- | -------------------------- |
-| `loadURL(url)`              | `url`: string — 要加载的网页地址  | Promise\<void>                    | 加载指定 URL               |
-| `loadHTML(html)`            | `html`: string — HTML 字符串      | Promise\<void>                    | 加载指定 HTML 内容         |
-| `show()`                    | 无                                | void                              | 显示窗口                   |
-| `hide()`                    | 无                                | void                              | 隐藏窗口                   |
-| `maximize()`                | 无                                | void                              | 最大化窗口                 |
-| `unMaximize()`              | 无                                | void                              | 还原窗口（取消最大化）     |
-| `minimize()`                | 无                                | void                              | 最小化窗口                 |
-| `unMinimize()`              | 无                                | void                              | 还原窗口（取消最小化）     |
-| `close()`                   | 无                                | void                              | 关闭窗口并回收至池中       |
-| `setTitle(title)`           | `title`: string                   | void                              | 设置窗口标题               |
-| `setDecorated(isDecorated)` | `isDecorated`: boolean            | void                              | 设置窗口是否带边框和标题栏 |
-| `resizable(resizable)`      | `resizable`: boolean              | void                              | 设置窗口是否可调整大小     |
-| `setSize(width, height)`    | `width`: number, `height`: number | void                              | 设置窗口尺寸（像素）       |
-| `getSize()`                 | 无                                | { width: number, height: number } | 获取窗口尺寸（像素）       |
-| `setPosition(x, y)`         | `x`: number, `y`: number          | void                              | 设置窗口位置（像素）       |
-| `getPosition()`             | 无                                | { x: number, y: number }          | 获取窗口位置（像素）       |
-| `focus()`                   | 无                                | void                              | 窗口获取焦点               |
-| `isFocused()`               | 无                                | boolean                           | 是否有焦点                 |
-| `isMaximized()`             | 无                                | boolean                           | 是否最大化                 |
-| `isMinimized()`             | 无                                | boolean                           | 是否最小化                 |
-| `toggleMaximize()`          | 无                                | void                              | 切换最大化状态             |
-| `toggleMinimize()`          | 无                                | void                              | 切换最小化状态             |
-| `openDevTools()`            | 无                                | void                              | 打开开发者工具             |
-| `closeDevTools()`           | 无                                | void                              | 关闭开发者工具             |
-| `id`                        | 无                                | number                            | 窗口唯一标识，自增编号     |
+| 方法/属性                               | 参数                                                              | 返回值                            | 说明                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------- |
+| `loadURL(url)`                          | `url`: string — 要加载的网页地址                                  | Promise\<void>                    | 加载指定 URL                                                  |
+| `loadHTML(html)`                        | `html`: string — HTML 字符串                                      | Promise\<void>                    | 加载指定 HTML 内容                                            |
+| `show()`                                | 无                                                                | void                              | 显示窗口                                                      |
+| `hide()`                                | 无                                                                | void                              | 隐藏窗口                                                      |
+| `maximize()`                            | 无                                                                | void                              | 最大化窗口                                                    |
+| `unMaximize()`                          | 无                                                                | void                              | 还原窗口（取消最大化）                                        |
+| `minimize()`                            | 无                                                                | void                              | 最小化窗口                                                    |
+| `unMinimize()`                          | 无                                                                | void                              | 还原窗口（取消最小化）                                        |
+| `close()`                               | 无                                                                | void                              | 关闭窗口并回收至池中                                          |
+| `setTitle(title)`                       | `title`: string                                                   | void                              | 设置窗口标题                                                  |
+| `setDecorated(isDecorated)`             | `isDecorated`: boolean                                            | void                              | 设置窗口是否带边框和标题栏                                    |
+| `setResizable(resizable)`               | `resizable`: boolean                                              | void                              | 设置窗口是否可调整大小                                        |
+| `setLevel(level)`                       | `level`: `-1` \| `0` \| `1`                                       | void                              | 设置窗口层级：-1=置底，0=正常，1=置顶                         |
+| `setFullScreen(isFullScreen, options?)` | `isFullScreen`: `boolean`, `options?`: `{ borderless?: boolean }` | void                              | 设置全屏模式。`borderless: true` 为无边框全屏，否则为独占全屏 |
+| `setIcon(icon)`                         | `icon`: `Icon`                                                    | void                              | 设置窗口图标                                                  |
+| `setSize(width, height)`                | `width`: number, `height`: number                                 | void                              | 设置窗口尺寸（像素）                                          |
+| `getSize()`                             | 无                                                                | { width: number, height: number } | 获取窗口尺寸（像素）                                          |
+| `setPosition(x, y)`                     | `x`: number, `y`: number                                          | void                              | 设置窗口位置（像素）                                          |
+| `getPosition()`                         | 无                                                                | { x: number, y: number }          | 获取窗口位置（像素）                                          |
+| `focus()`                               | 无                                                                | void                              | 窗口获取焦点                                                  |
+| `isFocused()`                           | 无                                                                | boolean                           | 是否有焦点                                                    |
+| `isMaximized()`                         | 无                                                                | boolean                           | 是否最大化                                                    |
+| `isMinimized()`                         | 无                                                                | boolean                           | 是否最小化                                                    |
+| `toggleMaximize()`                      | 无                                                                | void                              | 切换最大化状态                                                |
+| `toggleMinimize()`                      | 无                                                                | void                              | 切换最小化状态                                                |
+| `openDevTools()`                        | 无                                                                | void                              | 打开开发者工具                                                |
+| `closeDevTools()`                       | 无                                                                | void                              | 关闭开发者工具                                                |
+| `id`                                    | 无                                                                | number                            | 窗口唯一标识，自增编号                                        |
 
 ## 开发
 

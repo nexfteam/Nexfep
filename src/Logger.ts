@@ -18,7 +18,6 @@ class Logger {
     let result = "";
     let currentAnsiStyle = "";
 
-    // 命名前景色映射
     const fgColors: Record<string, string> = {
       black: "\x1b[30m",
       red: "\x1b[31m",
@@ -39,7 +38,6 @@ class Logger {
       lightwhite: "\x1b[97m",
     };
 
-    // 命名背景色映射
     const bgColors: Record<string, string> = {
       black: "\x1b[40m",
       red: "\x1b[41m",
@@ -51,7 +49,6 @@ class Logger {
       white: "\x1b[47m",
     };
 
-    // 文字样式：加粗、斜体、下划线
     const textStyles: Record<string, string> = {
       bold: "\x1b[1m",
       "font-weight:bold": "\x1b[1m",
@@ -62,14 +59,11 @@ class Logger {
       none: RESET,
     };
 
-    /** hex/rgb 转 ANSI 24位真彩色 */
     function colorToAnsi(colorVal: string, isBg = false): string {
       let val = colorVal.trim().toLowerCase();
-      // 命名色
       const colorMap = isBg ? bgColors : fgColors;
       if (colorMap[val]) return colorMap[val];
 
-      // hex #fff #ffffff
       const hexReg = /^#([0-9a-f]{3}|[0-9a-f]{6})$/;
       if (hexReg.test(val)) {
         let hex = val.replace("#", "");
@@ -84,7 +78,6 @@ class Logger {
         return isBg ? `\x1b[48;2;${r};${g};${b}m` : `\x1b[38;2;${r};${g};${b}m`;
       }
 
-      // rgb(r,g,b)
       const rgbReg = /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/;
       const rgbMatch = val.match(rgbReg);
       if (rgbMatch) {
@@ -95,7 +88,6 @@ class Logger {
       return "";
     }
 
-    /** 解析CSS样式字符串为ANSI序列 */
     function parseColorStyle(styleStr: string): string {
       if (!styleStr) return RESET;
       let ansi = "";
@@ -109,19 +101,16 @@ class Logger {
         const propKey = prop.trim().toLowerCase();
         const value = rest.join(":").trim().toLowerCase();
 
-        // 文字样式
         if (textStyles[`${propKey}:${value}`] || textStyles[value]) {
           ansi += textStyles[`${propKey}:${value}`] ?? textStyles[value];
           continue;
         }
 
-        // 前景色
         if (propKey === "color") {
           ansi += colorToAnsi(value, false);
           continue;
         }
 
-        // 背景色
         if (propKey === "background" || propKey === "background-color") {
           ansi += colorToAnsi(value, true);
           continue;
@@ -132,7 +121,6 @@ class Logger {
 
     for (const segment of parts) {
       if (segment === "%c") {
-        // 取出下一个样式参数，参数不足则重置样式
         const styleStr = args[styleArgIndex];
         styleArgIndex++;
         currentAnsiStyle = parseColorStyle(String(styleStr ?? ""));
@@ -146,10 +134,8 @@ class Logger {
       }
     }
 
-    // 全局末尾统一重置，防止后续日志被染色
     if (currentAnsiStyle) result += RESET;
 
-    // 剩余非样式参数直接拼接
     const extraArgs = args.slice(styleArgIndex);
     if (extraArgs.length) {
       result += " " + extraArgs.map(String).join(" ");
@@ -208,6 +194,11 @@ class Logger {
       this.__printLog(0, "Debug", args, "\x1b[90m", "\x1b[0m");
     } else {
       this.__printLog(0, "Debug", [args], "\x1b[90m", "\x1b[0m");
+    }
+  }
+  clear(): void {
+    if (this.logFilePath) {
+      fs.writeFileSync(this.logFilePath, "");
     }
   }
 }
