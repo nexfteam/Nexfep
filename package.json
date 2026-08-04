@@ -65,7 +65,7 @@
     "lint:fix": "oxlint --fix"
   },
   "dependencies": {
-    "@nexfteam/single-instance": "^0.0.7",
+    "@nexfteam/single-instance": "0.0.8",
     "@webviewjs/webview": "0.4.1"
   },
   "devDependencies": {

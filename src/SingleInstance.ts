@@ -5,13 +5,13 @@ class Locker {
   constructor(appName: string) {
     this.locker = new SingleInstance(appName);
   }
-  lock() {
-    return this.locker.lock();
+  lock(data?: string) {
+    return this.locker.lock(data);
   }
   unlock() {
     return this.locker.unlock();
   }
-  whenLost(callback: () => void) {
+  whenLost(callback: (data?: string) => void) {
     this.locker.on("connection-attempt", callback);
   }
 }

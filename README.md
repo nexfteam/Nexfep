@@ -148,14 +148,21 @@ const locker = app.createLocker("my-app");
 try {
   // Try to acquire the lock
   await locker.lock();
+  // You can also pass data to the other instance when acquiring the lock
+  // await locker.lock(process.argv[2]);
 } catch {
   // Instance already exists, exit the application
   app.exit();
 }
 // Focus the current instance when other instances acquire the lock
-locker.whenLost(() => {
+locker.whenLost((data) => {
   if (!win.isFocused()) {
     win.focus();
+  }
+  // If the other instance passed data, you can use it to perform specific actions
+  // If no data was passed, data will be null
+  if (data) {
+    console.log("Other instance passed data:", data);
   }
 });
 // Release the lock
@@ -164,7 +171,7 @@ locker.unlock();
 
 **Methods**
 
-- `lock()` — Try to acquire the lock
+- `lock(data?)` — Try to acquire the lock
 - `whenLost(callback)` — Register a callback to be called when other instances acquire the lock
 - `unlock()` — Release the lock
 

@@ -148,14 +148,21 @@ const locker = app.createLocker("my-app");
 try {
   // 尝试获取应用实例锁
   await locker.lock();
+  // 也可以带参数获取锁，例如：
+  // await locker.lock(process.argv[2]);
 } catch {
   // 应用实例已存在，退出应用
   app.exit();
 }
-// 在其它实例抢锁时聚焦当前实例
-locker.whenLost(() => {
+// 你可以在其它实例抢锁时聚焦当前实例
+locker.whenLost((data) => {
   if (!win.isFocused()) {
     win.focus();
+  }
+  // 如果对方实例在获取锁时传递了参数，你可以使用它来执行特定操作
+  // 若没有传递，data 字段将会是 null
+  if (data) {
+    console.log("传递了参数:", data);
   }
 });
 // 释放锁
@@ -166,7 +173,7 @@ locker.unlock();
 
 | 方法                 | 描述                     |
 | -------------------- | ------------------------ |
-| `lock()`             | 尝试获取应用实例锁       |
+| `lock(data?)`        | 尝试获取应用实例锁       |
 | `whenLost(callback)` | 当其它实例抢锁时执行回调 |
 | `unlock()`           | 释放锁                   |
 
