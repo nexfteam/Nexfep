@@ -117,6 +117,11 @@ class Window {
     this.unMinimize();
     this.window.focus();
   }
+  tell(message: string, data: any) {
+    this.webview.evaluateScript(
+      `window.dispatchEvent(new CustomEvent('${message}', { detail: ${JSON.stringify(data)} }));`,
+    );
+  }
   hide() {
     this.window.hide();
     this.isShow = false;
@@ -370,15 +375,14 @@ class WindowPool {
           const dataText = data.body.toString();
           const dataObj = JSON.parse(dataText);
           if (dataObj.type == "NexfepBeforeUnload") {
-            webview.evaluateScript(
-              `if(window?.isNexfepLoadDone){
-                            const MessageBody = { type: 'NexfepBeforeUnload' }
-                            window.ipc.postMessage(JSON.stringify(MessageBody));
-                        }else{
-                            const MessageBody = { type: 'NexfepLoadFalse' }
-                            window.ipc.postMessage(JSON.stringify(MessageBody));
-                        }`,
-            );
+            webview.evaluateScript(`
+              if(window?.isNexfepLoadDone){
+                const MessageBody = { type: 'NexfepBeforeUnload' }
+                window.ipc.postMessage(JSON.stringify(MessageBody));
+              }else{
+                const MessageBody = { type: 'NexfepLoadFalse' }
+                window.ipc.postMessage(JSON.stringify(MessageBody));
+              }`);
           } else if (dataObj.type == "NexfepLoadFalse") {
             this.__injectControlFunctions(windowObj);
           } else if (dataObj.type == "NexfepCloseWindow") {
@@ -406,28 +410,28 @@ class WindowPool {
             handlers.forEach(async (handler) => {
               const result = await handler(dataObj.data);
               if (result) {
-                webview.evaluateScript(`
-                                    window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(result)} }));
-                                `);
+                webview.evaluateScript(
+                  `window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(result)} }));`,
+                );
               } else {
-                webview.evaluateScript(`
-                                    window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: undefined }));
-                                `);
+                webview.evaluateScript(
+                  `window.dispatchEvent(new CustomEvent('nexfep-invoke-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: undefined }));`,
+                );
               }
             });
           } else if (dataObj.type == "NexfepSetGlobal") {
             this.global.set(dataObj.name, dataObj.value);
           } else if (dataObj.type == "NexfepGetGlobal") {
             const value = this.global.get(dataObj.name);
-            webview.evaluateScript(`
-                            window.dispatchEvent(new CustomEvent('nexfep-get-global-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(value)} }));
-                        `);
+            webview.evaluateScript(
+              `window.dispatchEvent(new CustomEvent('nexfep-get-global-result-${dataObj.eventId[0]}-${dataObj.eventId[1]}', { detail: ${JSON.stringify(value)} }));`,
+            );
           } else if (dataObj.type == "NexfepBroadcast") {
             this.windows.forEach(async (w) => {
               if (w != windowObj && w.isOpen) {
-                w.webview.evaluateScript(`
-                                    window.dispatchEvent(new CustomEvent('${dataObj.name}', { detail: ${JSON.stringify(dataObj.data)} }));
-                                `);
+                w.webview.evaluateScript(
+                  `window.dispatchEvent(new CustomEvent('${dataObj.name}', { detail: ${JSON.stringify(dataObj.data)} }));`,
+                );
               }
             });
           } else if (dataObj.type == "NexfepTell") {
@@ -436,9 +440,9 @@ class WindowPool {
             }
             this.windows.forEach(async (w) => {
               if (w.id == dataObj.to) {
-                w.webview.evaluateScript(`
-                                    window.dispatchEvent(new CustomEvent('${dataObj.message}', { detail: ${JSON.stringify(dataObj.data)} }));
-                                `);
+                w.webview.evaluateScript(
+                  `window.dispatchEvent(new CustomEvent('${dataObj.message}', { detail: ${JSON.stringify(dataObj.data)} }));`,
+                );
               }
             });
           } else if (dataObj.type == "NexfepConsoleLog") {
@@ -508,6 +512,15 @@ class WindowPool {
       event,
       (this.handlers.get(event) || []).filter((c) => c !== callback),
     );
+  }
+  async broadcast(event: string, data: any) {
+    this.windows.forEach(async (w) => {
+      if (w.isOpen) {
+        w.webview.evaluateScript(
+          `window.dispatchEvent(new CustomEvent('${event}', { detail: ${JSON.stringify(data)} }));`,
+        );
+      }
+    });
   }
 }
 

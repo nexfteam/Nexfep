@@ -411,6 +411,12 @@ window.addEventListener("user-login", (event) => {
 });
 ```
 
+特别地，主进程可以通过 `pool.broadcast` 向所有打开的窗口发送事件，参数与页面中的 `window.broadcast` 相同：
+
+```typescript
+pool.broadcast("user-login", { userId: 123 });
+```
+
 #### 定向发送
 
 通过 `window.tell` 向指定 ID 的窗口发送消息：
@@ -437,6 +443,12 @@ window.addEventListener("custom-message", (event) => {
 
 ```javascript
 console.log("当前窗口 ID:", window.id);
+```
+
+主进程也可通过 `win.tell` 向该窗口发送消息：
+
+```typescript
+win.tell("custom-message", { text: `你好，窗口 ${win.id}` });
 ```
 
 ### 自定义消息

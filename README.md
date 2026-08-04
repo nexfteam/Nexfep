@@ -409,6 +409,12 @@ window.addEventListener("user-login", (event) => {
 });
 ```
 
+The main process can send events to all open windows via `pool.broadcast`, with parameters identical to those of `window.broadcast` in the page:
+
+```typescript
+pool.broadcast("user-login", { userId: 123 });
+```
+
 #### Tell
 
 Send a message to a specific window by its ID via `window.tell`:
@@ -435,6 +441,12 @@ Each window's ID can be accessed via `window.id`:
 
 ```javascript
 console.log("This window ID:", window.id);
+```
+
+The main process can also send messages to this window through `win.tell`:
+
+```typescript
+win.tell("custom-message", { text: `Hello Window ${win.id}` });
 ```
 
 ### Custom Messages
