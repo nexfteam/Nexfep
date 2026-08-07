@@ -40,4 +40,31 @@ class Icon {
   }
 }
 
-export { Icon };
+class Size {
+  width: number;
+  height: number;
+  logical: boolean;
+  constructor(width: number, height: number, logical?: boolean) {
+    this.width = width;
+    this.height = height;
+    this.logical = logical ?? true;
+  }
+}
+
+class Position {
+  x: number;
+  y: number;
+  logical: boolean;
+  constructor(x: number, y: number, logical?: boolean) {
+    this.x = x;
+    this.y = y;
+    this.logical = logical ?? false;
+  }
+}
+
+enum WindowLevel {
+  Bottommost = -1,
+  Normal = 0,
+  Topmost = 1,
+}
+export { Icon, Size, Position, WindowLevel };

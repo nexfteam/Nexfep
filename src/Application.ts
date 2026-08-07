@@ -47,4 +47,5 @@ class Application {
   }
 }
 
-export { Application, Icon };
+export { Application };
+export * from "./Basics.js";

@@ -1,6 +1,6 @@
 import { Application, BrowserWindow, Webview } from "@webviewjs/webview";
 import { Logger } from "./Logger.js";
-import { Icon } from "./Basics.js";
+import { Icon, Size, Position, WindowLevel } from "./Basics.js";
 import os from "os";
 import path from "path";
 import fs from "fs";
@@ -21,16 +21,16 @@ class Window {
     this.isDecorated = false;
     this.id = id;
   }
-  setLevel(level: -1 | 0 | 1) {
-    if (level == -1) {
+  setLevel(level: WindowLevel) {
+    if (level == WindowLevel.Bottommost) {  
       this.window.setAlwaysOnTop(false);
       this.window.setAlwaysOnBottom(true);
       return;
-    } else if (level == 0) {
+    } else if (level == WindowLevel.Normal) {
       this.window.setAlwaysOnTop(false);
       this.window.setAlwaysOnBottom(false);
       return;
-    } else if (level == 1) {
+    } else if (level == WindowLevel.Topmost) {
       this.window.setAlwaysOnTop(true);
       this.window.setAlwaysOnBottom(false);
       return;
@@ -98,14 +98,14 @@ class Window {
   setIcon(icon: Icon) {
     this.window.setWindowIcon(icon.data, icon.width, icon.height);
   }
-  setSize(width: number, height: number) {
-    this.window.setSize(width, height);
+  setSize(size: Size) {
+    this.window.setSize(size.width, size.height, size.logical);
   }
   getSize() {
     return this.window.getInnerSize();
   }
-  setPosition(x: number, y: number) {
-    this.window.setPosition(x, y);
+  setPosition(position: Position) {
+    this.window.setPosition(position.x, position.y, position.logical);
   }
   getPosition() {
     return this.window.getPosition();
@@ -467,8 +467,8 @@ class WindowPool {
     title?: string;
     icon?: Icon;
     resizable?: boolean;
-    width?: number;
-    height?: number;
+    size?: Size;
+    position?: Position;
   }) {
     const window =
       this.windows.find((w) => w.isOpen === false) || (await this.__createNewWindowObj());
@@ -485,7 +485,12 @@ class WindowPool {
         window.setIcon(options?.icon);
       }
       window.setResizable(options?.resizable ?? true);
-      window.setSize(options?.width ?? 800, options?.height ?? 600);
+      if (options?.size) {
+        window.setSize(options?.size);
+      }
+      if (options?.position) {
+        window.setPosition(options?.position);
+      }
     }
     if (this.freeWindowCount == 0) {
       this.__createNewWindowObj();
