@@ -1,6 +1,6 @@
 import { Application, BrowserWindow, Webview } from "@webviewjs/webview";
 import { Logger } from "./Logger.js";
-import { Icon } from "./Icon.js";
+import { Icon } from "./Basics.js";
 import os from "os";
 import path from "path";
 import fs from "fs";

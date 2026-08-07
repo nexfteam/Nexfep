@@ -3,7 +3,7 @@ import { WindowPool } from "./WindowManager.js";
 import { Tray } from "./Tray.js";
 import { Logger } from "./Logger.js";
 import { Locker } from "./SingleInstance.js";
-import { Icon } from "./Icon.js";
+import { Icon } from "./Basics.js";
 class __Utils {
   app: WebviewApplication;
   constructor(app: WebviewApplication) {

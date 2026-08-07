@@ -41,8 +41,8 @@
     "src/Logger.d.ts",
     "src/SingleInstance.js",
     "src/SingleInstance.d.ts",
-    "src/Icon.js",
-    "src/Icon.d.ts",
+    "src/Basics.js",
+    "src/Basics.d.ts",
     "frontend/index.d.ts"
   ],
   "type": "module",

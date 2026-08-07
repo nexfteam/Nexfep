@@ -1,5 +1,5 @@
 import { Application, TrayIcon } from "@webviewjs/webview";
-import { Icon } from "./Icon.js";
+import { Icon } from "./Basics.js";
 class Tray {
   app: Application;
   tray: TrayIcon;
