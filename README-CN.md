@@ -260,22 +260,22 @@ const win = await pool.createWindow({
   title: "我的应用", // 窗口标题，默认 "Nexfep Window"
   icon: iconInstance, // 窗口图标，Icon 实例，可选
   resizable: true, // 是否可调整大小，默认 true
-  width: 800, // 窗口宽度，默认 800
-  height: 600, // 窗口高度，默认 600
+  size: new Size(800, 600), // 窗口尺寸，可选
+  position: new Position(100, 100), // 窗口位置，可选
 });
 ```
 
 **参数说明**
 
-| 选项         | 类型      | 默认值            | 说明                                                                |
-| ------------ | --------- | ----------------- | ------------------------------------------------------------------- |
-| `visible`    | `boolean` | `true`            | 是否立即显示窗口                                                    |
-| `decoration` | `boolean` | `true`            | 是否使用系统窗口装饰。设为 `false` 时，窗口无边框，需要自定义标题栏 |
-| `title`      | `string`  | `"Nexfep Window"` | 窗口标题                                                            |
-| `icon`       | `Icon`    | 无                | 窗口图标                                                            |
-| `resizable`  | `boolean` | `true`            | 窗口是否可调整大小                                                  |
-| `width`      | `number`  | `800`             | 窗口宽度（像素）                                                    |
-| `height`     | `number`  | `600`             | 窗口高度（像素）                                                    |
+| 选项         | 类型        | 默认值            | 说明                                                                |
+| ------------ | ----------- | ----------------- | ------------------------------------------------------------------- |
+| `visible`    | `boolean`   | `true`            | 是否立即显示窗口                                                    |
+| `decoration` | `boolean`   | `true`            | 是否使用系统窗口装饰。设为 `false` 时，窗口无边框，需要自定义标题栏 |
+| `title`      | `string`    | `"Nexfep Window"` | 窗口标题                                                            |
+| `icon`       | `Icon`      | 无                | 窗口图标                                                            |
+| `resizable`  | `boolean`   | `true`            | 窗口是否可调整大小                                                  |
+| `size`       | `Size`      | 无                | 窗口尺寸，可选                                                      |
+| `position`   | `Position`  | 无                | 窗口位置，可选                                                      |
 
 ### 窗口操作
 
@@ -287,7 +287,8 @@ window.minimize();
 window.close();
 window.focus();
 window.setTitle("新标题");
-window.setSize(800, 600);
+window.setSize(new Size(800, 600));
+window.setPosition(new Position(100, 100));
 window.openDevTools();
 ```
 
@@ -645,6 +646,7 @@ nexfep build -u 7
 | `utils`                 | /                                                  | \_\_Utils   | 工具方法（通知） |
 | `logger`                | /                                                  | Logger      | 日志实例         |
 | `createTray(options)`   | 见 Tray 章节                                       | Tray        | 创建系统托盘图标 |
+| `createLocker(appName)` | `appName`: string                                  | Locker      | 创建应用实例锁   |
 | `exit()`                | 无                                                 | void        | 退出应用         |
 
 ### WindowPool
@@ -656,7 +658,8 @@ nexfep build -u 7
 | `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any | 无                | 取消监听指定事件         |
 | `global`                    | /                                               | Map\<string, any> | 全局变量 Map             |
 | `closeWindow(window)`       | `window`: Window                                | Promise\<void>    | 关闭指定窗口并回收至池中 |
-| `onCustomMessage`           | `(window: Window, data: string) => void`        | 无                | 自定义消息回调函数       |
+| `onCustomMessage`           | `(window: Window, message: string, data: any) => void` | 无                | 自定义消息回调函数                                       |
+| `broadcast(event, data)`    | `event`: string, `data`: any                           | 无                | 向所有打开的窗口发送事件                                 |
 
 ### Window
 
@@ -677,9 +680,9 @@ nexfep build -u 7
 | `setLevel(level)`                       | `level`: `-1` \| `0` \| `1`                                       | void                              | 设置窗口层级：-1=置底，0=正常，1=置顶                         |
 | `setFullScreen(isFullScreen, options?)` | `isFullScreen`: `boolean`, `options?`: `{ borderless?: boolean }` | void                              | 设置全屏模式。`borderless: true` 为无边框全屏，否则为独占全屏 |
 | `setIcon(icon)`                         | `icon`: `Icon`                                                    | void                              | 设置窗口图标                                                  |
-| `setSize(width, height)`                | `width`: number, `height`: number                                 | void                              | 设置窗口尺寸（像素）                                          |
+| `setSize(size)`                         | `size`: `Size`                                                    | void                              | 设置窗口尺寸                                                  |
 | `getSize()`                             | 无                                                                | { width: number, height: number } | 获取窗口尺寸（像素）                                          |
-| `setPosition(x, y)`                     | `x`: number, `y`: number                                          | void                              | 设置窗口位置（像素）                                          |
+| `setPosition(position)`                 | `position`: `Position`                                            | void                              | 设置窗口位置                                                  |
 | `getPosition()`                         | 无                                                                | { x: number, y: number }          | 获取窗口位置（像素）                                          |
 | `focus()`                               | 无                                                                | void                              | 窗口获取焦点                                                  |
 | `isFocused()`                           | 无                                                                | boolean                           | 是否有焦点                                                    |
@@ -687,6 +690,7 @@ nexfep build -u 7
 | `isMinimized()`                         | 无                                                                | boolean                           | 是否最小化                                                    |
 | `toggleMaximize()`                      | 无                                                                | void                              | 切换最大化状态                                                |
 | `toggleMinimize()`                      | 无                                                                | void                              | 切换最小化状态                                                |
+| `tell(message, data)`                   | `message`: string, `data`: any                                    | void                              | 从主进程向该窗口发送消息                                      |
 | `openDevTools()`                        | 无                                                                | void                              | 打开开发者工具                                                |
 | `closeDevTools()`                       | 无                                                                | void                              | 关闭开发者工具                                                |
 | `id`                                    | 无                                                                | number                            | 窗口唯一标识，自增编号                                        |

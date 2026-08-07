@@ -258,22 +258,22 @@ const win = await pool.createWindow({
   title: "My App", // Window title, default "Nexfep Window"
   icon: iconInstance, // Window icon, Icon instance, optional
   resizable: true, // Whether the window is resizable, default true
-  width: 800, // Window width, default 800
-  height: 600, // Window height, default 600
+  size: new Size(800, 600), // Window size, optional
+  position: new Position(100, 100), // Window position, optional
 });
 ```
 
 **Parameters**
 
-| Option       | Type      | Default           | Description                                                                                                      |
-| ------------ | --------- | ----------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `visible`    | `boolean` | `true`            | Whether to immediately show the window                                                                           |
-| `decoration` | `boolean` | `true`            | Whether to use system window decorations. When `false`, the window has no border and requires a custom title bar |
-| `title`      | `string`  | `"Nexfep Window"` | Window title                                                                                                     |
-| `icon`       | `Icon`    | none              | Window icon                                                                                                      |
-| `resizable`  | `boolean` | `true`            | Whether the window is resizable                                                                                  |
-| `width`      | `number`  | `800`             | Window width in pixels                                                                                           |
-| `height`     | `number`  | `600`             | Window height in pixels                                                                                          |
+| Option       | Type        | Default           | Description                                                                                                      |
+| ------------ | ----------- | ----------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `visible`    | `boolean`   | `true`            | Whether to immediately show the window                                                                           |
+| `decoration` | `boolean`   | `true`            | Whether to use system window decorations. When `false`, the window has no border and requires a custom title bar |
+| `title`      | `string`    | `"Nexfep Window"` | Window title                                                                                                     |
+| `icon`       | `Icon`      | none              | Window icon                                                                                                      |
+| `resizable`  | `boolean`   | `true`            | Whether the window is resizable                                                                                  |
+| `size`       | `Size`      | none              | Window size, optional                                                                               |
+| `position`   | `Position`  | none              | Window position, optional                                                                                        |
 
 ### Window Operations
 
@@ -285,7 +285,8 @@ window.minimize();
 window.close();
 window.focus();
 window.setTitle("New Title");
-window.setSize(800, 600);
+window.setSize(new Size(800, 600));
+window.setPosition(new Position(100, 100));
 window.openDevTools();
 ```
 
@@ -643,6 +644,7 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 | `utils`                 | /                                                  | \_\_Utils    | Utility methods (notifications)  |
 | `logger`                | /                                                  | Logger       | The logger instance              |
 | `createTray(options)`   | see Tray section                                   | Tray         | Creates a system tray icon       |
+| `createLocker(appName)` | `appName`: string                                  | Locker       | Creates an application lock      |
 | `exit()`                | None                                               | void         | Exits the application            |
 
 ### WindowPool
@@ -654,7 +656,8 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 | `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any        | None              | Removes the specified event listener                   |
 | `global`                    | /                                                      | Map\<string, any> | A global variable map                                  |
 | `closeWindow(window)`       | `window`: Window                                       | Promise\<void>    | Closes the specified window and returns it to the pool |
-| `onCustomMessage`           | `(window: Window, data: string) => void`               | None              | Custom message callback                                |
+| `onCustomMessage`           | `(window: Window, message: string, data: any) => void` | None              | Custom message callback                                |
+| `broadcast(event, data)`    | `event`: string, `data`: any                           | None              | Sends an event to all open windows                     |
 
 ### Window
 
@@ -675,9 +678,9 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 | `setLevel(level)`                       | `level`: `-1` \| `0` \| `1`                                       | void                              | Sets window level: -1=bottom, 0=normal, 1=top                                                      |
 | `setFullScreen(isFullScreen, options?)` | `isFullScreen`: `boolean`, `options?`: `{ borderless?: boolean }` | void                              | Sets fullscreen mode. `borderless: true` for borderless fullscreen, otherwise exclusive fullscreen |
 | `setIcon(icon)`                         | `icon`: `Icon`                                                    | void                              | Sets the window icon                                                                               |
-| `setSize(width, height)`                | `width`: number, `height`: number                                 | void                              | Sets the window size in pixels                                                                     |
+| `setSize(size)`                         | `size`: `Size`                                                    | void                              | Sets the window size                                                                               |
 | `getSize()`                             | None                                                              | { width: number, height: number } | Gets the window size in pixels                                                                     |
-| `setPosition(x, y)`                     | `x`: number, `y`: number                                          | void                              | Sets the window position in pixels                                                                 |
+| `setPosition(position)`                 | `position`: `Position`                                            | void                              | Sets the window position                                                                           |
 | `getPosition()`                         | None                                                              | { x: number, y: number }          | Gets the window position in pixels                                                                 |
 | `focus()`                               | None                                                              | void                              | Focuses the window                                                                                 |
 | `isFocused()`                           | None                                                              | boolean                           | Whether the window has focus                                                                       |
@@ -685,6 +688,7 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 | `isMinimized()`                         | None                                                              | boolean                           | Whether the window is minimized                                                                    |
 | `toggleMaximize()`                      | None                                                              | void                              | Toggles the window maximized state                                                                 |
 | `toggleMinimize()`                      | None                                                              | void                              | Toggles the window minimized state                                                                 |
+| `tell(message, data)`                   | `message`: string, `data`: any                                    | void                              | Sends a message to the window from the main process                                                |
 | `openDevTools()`                        | None                                                              | void                              | Opens developer tools                                                                              |
 | `closeDevTools()`                       | None                                                              | void                              | Closes developer tools                                                                             |
 | `id`                                    | None                                                              | number                            | Unique window identifier, auto-incrementing                                                        |
