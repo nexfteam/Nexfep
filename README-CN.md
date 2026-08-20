@@ -63,19 +63,22 @@ const app = new Application();
 const app = new Application({ WindowsWebview2UserDataFolder: "C:\\custom\\webview2-data" });
 // 或指定日志文件路径
 const app = new Application({ LogFilePath: "./app.log" });
+// 或注册自定义协议代理
+const app = new Application({ localProxys: [{ protocolName: "app", localPath: "./public" }] });
 ```
 
 **构造函数参数**
 
-| 选项                            | 类型             | 默认值                                           | 说明                                |
-| ------------------------------- | ---------------- | ------------------------------------------------ | ----------------------------------- |
-| `WindowsWebview2UserDataFolder` | `string`（可选） | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 用户数据目录（仅 Windows） |
-| `LogFilePath`                   | `string`（可选） | 无                                               | 日志文件输出路径                    |
+| 选项                            | 类型                                                                      | 默认值                                           | 说明                                |
+| ------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
+| `WindowsWebview2UserDataFolder` | `string`（可选）                                                          | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 用户数据目录（仅 Windows） |
+| `LogFilePath`                   | `string`（可选）                                                          | 无                                               | 日志文件输出路径                    |
+| `localProxys`                   | `Array<{ protocolName: string; localPath: string }>`（可选）              | 无                                               | 自定义协议代理，用于提供本地文件服务 |
 
 **属性**
 
 - `windows` — `WindowPool` 实例，用于管理浏览器窗口
-- `utils` — 工具方法（如桌面通知）
+- `utils` — 工具方法（如桌面通知、文件选择弹窗）
 - `logger` — `Logger` 实例，用于日志记录
 
 **方法**
@@ -84,7 +87,69 @@ const app = new Application({ LogFilePath: "./app.log" });
 - `createLocker(appName)` — 创建应用实例锁，防止多个实例运行
 - `exit()` — 退出应用
 
-### Icon
+### 基础类型
+
+Nexfep 提供了几个贯穿框架的基础类型。
+
+#### Size
+
+`Size` 表示窗口尺寸，包含宽度和高度，支持逻辑像素和物理像素。
+
+```typescript
+import { Size } from "nexfep";
+
+const size = new Size(800, 600);
+const size = new Size(800, 600, true); // 逻辑像素（默认）
+```
+
+**属性**
+
+| 属性     | 类型      | 说明                          |
+| -------- | --------- | ----------------------------- |
+| `width`  | `number`  | 宽度（像素）                  |
+| `height` | `number`  | 高度（像素）                  |
+| `logical`| `boolean` | 是否使用逻辑像素，默认 `true`  |
+
+#### Position
+
+`Position` 表示窗口在屏幕上的位置，支持逻辑像素和物理像素。
+
+```typescript
+import { Position } from "nexfep";
+
+const pos = new Position(100, 100);
+const pos = new Position(100, 100, false); // 物理像素（默认）
+```
+
+**属性**
+
+| 属性     | 类型      | 说明                           |
+| -------- | --------- | ------------------------------ |
+| `x`      | `number`  | X 坐标（像素）                 |
+| `y`      | `number`  | Y 坐标（像素）                 |
+| `logical`| `boolean` | 是否使用逻辑像素，默认 `false`  |
+
+#### WindowLevel
+
+`WindowLevel` 是一个枚举，表示窗口的 Z 轴层级。
+
+```typescript
+import { WindowLevel } from "nexfep";
+
+window.setLevel(WindowLevel.Bottommost);
+window.setLevel(WindowLevel.Normal);
+window.setLevel(WindowLevel.Topmost);
+```
+
+**值**
+
+| 值                         | 数值 | 说明     |
+| -------------------------- | ---- | -------- |
+| `WindowLevel.Bottommost`   | `-1` | 置底     |
+| `WindowLevel.Normal`       | `0`  | 正常层级 |
+| `WindowLevel.Topmost`      | `1`  | 置顶     |
+
+#### Icon
 
 `Icon` 用于表示图片资源，可被用作窗口图标、托盘图标等。
 
@@ -232,6 +297,55 @@ const notification = app.utils.notify("标题", { body: "通知内容" });
 - `title` — 通知标题
 - `options`（可选）— 配置对象
   - `body` — 通知正文
+
+### 选择文件弹窗
+
+通过 `app.utils.openFileDialog()` 打开选择文件弹窗。
+
+```typescript
+const files = await app.utils.openFileDialog({
+  multiple: true,
+  title: "选择文件",
+  filters: [
+    { name: "所有文件", extensions: ["*"] },
+    { name: "图片文件", extensions: ["jpg", "jpeg", "png"] },
+  ],
+});
+```
+
+**参数**
+
+- `multiple`（可选）— 是否允许选择多个文件
+- `title`（可选）— 弹窗标题
+- `filters`（可选）— 文件类型过滤器数组，每个元素为一个对象，包含 `name`（过滤器名称）和 `extensions`（支持的文件扩展名数组）
+
+**返回值**
+
+- `Array<string>`: 选择的文件路径数组
+
+### 本地协议代理
+
+Nexfep 支持注册自定义协议处理器，用于提供本地文件服务，从而可以通过自定义协议（如 `app://`）加载本地资源。
+
+```typescript
+const app = new Application({
+  localProxys: [
+    { protocolName: "app", localPath: "./public" },
+  ],
+});
+```
+
+注册后，即可使用自定义协议加载页面：
+
+```typescript
+await window.loadURL("app://index.html");
+```
+
+对 `app://` 的请求会被拦截，并从 `./public` 目录中提供对应的文件。MIME 类型会根据文件扩展名自动检测。
+
+**安全**
+
+协议代理使用路径解析来防止目录遍历攻击。如果请求试图访问配置的 `localPath` 之外的文件，将返回 `403 Forbidden` 响应。
 
 ### 窗口池
 
@@ -641,9 +755,9 @@ nexfep build -u 7
 
 | 方法/属性               | 参数                                               | 返回值      | 说明             |
 | ----------------------- | -------------------------------------------------- | ----------- | ---------------- |
-| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath? }` | Application | 创建应用实例     |
+| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath?, localProxys? }` | Application | 创建应用实例     |
 | `windows`               | /                                                  | WindowPool  | 窗口池实例       |
-| `utils`                 | /                                                  | \_\_Utils   | 工具方法（通知） |
+| `utils`                 | /                                                  | \_\_Utils   | 工具方法（通知、文件选择弹窗） |
 | `logger`                | /                                                  | Logger      | 日志实例         |
 | `createTray(options)`   | 见 Tray 章节                                       | Tray        | 创建系统托盘图标 |
 | `createLocker(appName)` | `appName`: string                                  | Locker      | 创建应用实例锁   |
@@ -677,13 +791,13 @@ nexfep build -u 7
 | `setTitle(title)`                       | `title`: string                                                   | void                              | 设置窗口标题                                                  |
 | `setDecorated(isDecorated)`             | `isDecorated`: boolean                                            | void                              | 设置窗口是否带边框和标题栏                                    |
 | `setResizable(resizable)`               | `resizable`: boolean                                              | void                              | 设置窗口是否可调整大小                                        |
-| `setLevel(level)`                       | `level`: `-1` \| `0` \| `1`                                       | void                              | 设置窗口层级：-1=置底，0=正常，1=置顶                         |
+| `setLevel(level)`                     | `level`: `WindowLevel`                                            | void                              | 设置窗口层级：Bottommost、Normal、Topmost                                                  |
 | `setFullScreen(isFullScreen, options?)` | `isFullScreen`: `boolean`, `options?`: `{ borderless?: boolean }` | void                              | 设置全屏模式。`borderless: true` 为无边框全屏，否则为独占全屏 |
 | `setIcon(icon)`                         | `icon`: `Icon`                                                    | void                              | 设置窗口图标                                                  |
 | `setSize(size)`                         | `size`: `Size`                                                    | void                              | 设置窗口尺寸                                                  |
-| `getSize()`                             | 无                                                                | { width: number, height: number } | 获取窗口尺寸（像素）                                          |
+| `getSize(logical?)`                    | `logical?`: `boolean`                                             | { width: number, height: number } | 获取窗口尺寸（像素）                                          |
 | `setPosition(position)`                 | `position`: `Position`                                            | void                              | 设置窗口位置                                                  |
-| `getPosition()`                         | 无                                                                | { x: number, y: number }          | 获取窗口位置（像素）                                          |
+| `getPosition(logical?)`                | `logical?`: `boolean`                                             | { x: number, y: number }          | 获取窗口位置（像素）                                          |
 | `focus()`                               | 无                                                                | void                              | 窗口获取焦点                                                  |
 | `isFocused()`                           | 无                                                                | boolean                           | 是否有焦点                                                    |
 | `isMaximized()`                         | 无                                                                | boolean                           | 是否最大化                                                    |

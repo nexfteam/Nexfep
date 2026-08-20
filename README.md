@@ -63,19 +63,22 @@ const app = new Application();
 const app = new Application({ WindowsWebview2UserDataFolder: "C:\\custom\\webview2-data" });
 // or with log file path
 const app = new Application({ LogFilePath: "./app.log" });
+// or with custom protocol proxy
+const app = new Application({ localProxys: [{ protocolName: "app", localPath: "./public" }] });
 ```
 
 **Constructor Options**
 
-| Option                          | Type                | Default                                          | Description                                 |
-| ------------------------------- | ------------------- | ------------------------------------------------ | ------------------------------------------- |
-| `WindowsWebview2UserDataFolder` | `string` (optional) | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 user data directory (Windows only) |
-| `LogFilePath`                   | `string` (optional) | none                                             | File path for log output                    |
+| Option                          | Type                                                                  | Default                                          | Description                                 |
+| ------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------- |
+| `WindowsWebview2UserDataFolder` | `string` (optional)                                                   | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 user data directory (Windows only) |
+| `LogFilePath`                   | `string` (optional)                                                   | none                                             | File path for log output                    |
+| `localProxys`                   | `Array<{ protocolName: string; localPath: string }>` (optional)       | none                                             | Custom protocol proxies for serving local files |
 
 **Properties**
 
 - `windows` — The `WindowPool` instance for managing browser windows
-- `utils` — Utility methods (e.g., desktop notifications)
+- `utils` — Utility methods (e.g., desktop notifications, file dialogs)
 - `logger` — The `Logger` instance for logging
 
 **Methods**
@@ -84,7 +87,69 @@ const app = new Application({ LogFilePath: "./app.log" });
 - `createLocker(appName)` — Create an application instance lock to prevent multiple instances
 - `exit()` — Exit the application
 
-### Icon
+### Basic Types
+
+Nexfep provides several basic types that are used throughout the framework.
+
+#### Size
+
+`Size` represents a window size with width and height, supporting both logical and physical pixels.
+
+```typescript
+import { Size } from "nexfep";
+
+const size = new Size(800, 600);
+const size = new Size(800, 600, true); // logical pixels (default)
+```
+
+**Properties**
+
+| Property | Type     | Description                                             |
+| -------- | -------- | ------------------------------------------------------- |
+| `width`  | `number` | Width in pixels                                         |
+| `height` | `number` | Height in pixels                                        |
+| `logical`| `boolean`| Whether to use logical pixels (DPI-aware), default `true` |
+
+#### Position
+
+`Position` represents a window position on screen, supporting both logical and physical pixels.
+
+```typescript
+import { Position } from "nexfep";
+
+const pos = new Position(100, 100);
+const pos = new Position(100, 100, false); // physical pixels (default)
+```
+
+**Properties**
+
+| Property | Type     | Description                                              |
+| -------- | -------- | -------------------------------------------------------- |
+| `x`      | `number` | X position in pixels                                     |
+| `y`      | `number` | Y position in pixels                                     |
+| `logical`| `boolean`| Whether to use logical pixels (DPI-aware), default `false` |
+
+#### WindowLevel
+
+`WindowLevel` is an enum representing the window z-order level.
+
+```typescript
+import { WindowLevel } from "nexfep";
+
+window.setLevel(WindowLevel.Bottommost);
+window.setLevel(WindowLevel.Normal);
+window.setLevel(WindowLevel.Topmost);
+```
+
+**Values**
+
+| Value                       | Numeric | Description       |
+| --------------------------- | ------- | ----------------- |
+| `WindowLevel.Bottommost`    | `-1`    | Always on bottom  |
+| `WindowLevel.Normal`        | `0`     | Normal level      |
+| `WindowLevel.Topmost`       | `1`     | Always on top     |
+
+#### Icon
 
 `Icon` represents an image resource that can be used as a window icon, tray icon, etc.
 
@@ -230,6 +295,55 @@ const notification = app.utils.notify("Title", { body: "Notification body" });
 - `title` — Notification title
 - `options` (optional) — Configuration object
   - `body` — Notification body text
+
+### File Selection Dialog
+
+Open the file selection dialog using `app.utils.openFileDialog()`.
+
+```typescript
+const files = await app.utils.openFileDialog({
+  multiple: true,
+  title: "Select Files",
+  filters: [
+    { name: "All Files", extensions: ["*"] },
+    { name: "Image Files", extensions: ["jpg", "jpeg", "png"] },
+  ],
+});
+```
+
+**Parameters**
+
+- `multiple` (Optional) — Allow selection of multiple files
+- `title` (Optional) — Title of the dialog
+- `filters` (Optional) — Array of file type filters, each object has `name` (filter name) and `extensions` (supported file extensions array)
+
+**Return Value**
+
+- `Array<string>`: Array of selected file paths
+
+### Local Protocol Proxy
+
+Nexfep supports registering custom protocol handlers to serve local files, allowing you to load local resources using custom protocols like `app://`.
+
+```typescript
+const app = new Application({
+  localProxys: [
+    { protocolName: "app", localPath: "./public" },
+  ],
+});
+```
+
+After registration, you can load pages using the custom protocol:
+
+```typescript
+await window.loadURL("app://index.html");
+```
+
+Requests to `app://` will be intercepted and the corresponding files from the `./public` directory will be served. The MIME type is automatically detected based on the file extension.
+
+**Security**
+
+The proxy uses path resolution to prevent directory traversal attacks. If a request tries to access files outside the configured `localPath`, it will return a `403 Forbidden` response.
 
 ### Window Pool
 
@@ -639,9 +753,9 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 
 | Method/Property         | Parameters                                         | Return Value | Description                      |
 | ----------------------- | -------------------------------------------------- | ------------ | -------------------------------- |
-| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath? }` | Application  | Creates the application instance |
+| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath?, localProxys? }` | Application  | Creates the application instance |
 | `windows`               | /                                                  | WindowPool   | The window pool instance         |
-| `utils`                 | /                                                  | \_\_Utils    | Utility methods (notifications)  |
+| `utils`                 | /                                                  | \_\_Utils    | Utility methods (notifications, file dialogs) |
 | `logger`                | /                                                  | Logger       | The logger instance              |
 | `createTray(options)`   | see Tray section                                   | Tray         | Creates a system tray icon       |
 | `createLocker(appName)` | `appName`: string                                  | Locker       | Creates an application lock      |
@@ -675,13 +789,13 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 | `setTitle(title)`                       | `title`: string                                                   | void                              | Sets the window title                                                                              |
 | `setDecorated(isDecorated)`             | `isDecorated`: boolean                                            | void                              | Sets whether the window has borders and title bar                                                  |
 | `setResizable(resizable)`               | `resizable`: boolean                                              | void                              | Sets whether the window is resizable                                                               |
-| `setLevel(level)`                       | `level`: `-1` \| `0` \| `1`                                       | void                              | Sets window level: -1=bottom, 0=normal, 1=top                                                      |
+| `setLevel(level)`                     | `level`: `WindowLevel`                                            | void                              | Sets window level: Bottommost, Normal, Topmost                                                  |
 | `setFullScreen(isFullScreen, options?)` | `isFullScreen`: `boolean`, `options?`: `{ borderless?: boolean }` | void                              | Sets fullscreen mode. `borderless: true` for borderless fullscreen, otherwise exclusive fullscreen |
 | `setIcon(icon)`                         | `icon`: `Icon`                                                    | void                              | Sets the window icon                                                                               |
 | `setSize(size)`                         | `size`: `Size`                                                    | void                              | Sets the window size                                                                               |
-| `getSize()`                             | None                                                              | { width: number, height: number } | Gets the window size in pixels                                                                     |
+| `getSize(logical?)`                    | `logical?`: `boolean`                                             | { width: number, height: number } | Gets the window size in pixels                                                                     |
 | `setPosition(position)`                 | `position`: `Position`                                            | void                              | Sets the window position                                                                           |
-| `getPosition()`                         | None                                                              | { x: number, y: number }          | Gets the window position in pixels                                                                 |
+| `getPosition(logical?)`                | `logical?`: `boolean`                                             | { x: number, y: number }          | Gets the window position in pixels                                                                 |
 | `focus()`                               | None                                                              | void                              | Focuses the window                                                                                 |
 | `isFocused()`                           | None                                                              | boolean                           | Whether the window has focus                                                                       |
 | `isMaximized()`                         | None                                                              | boolean                           | Whether the window is maximized                                                                    |

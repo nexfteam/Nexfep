@@ -5,13 +5,19 @@ import { Logger } from "./Logger.js";
 import { Locker } from "./SingleInstance.js";
 import { Icon } from "./Basics.js";
 class __Utils {
-  app: WebviewApplication;
-  constructor(app: WebviewApplication) {
+  app: Application;
+  constructor(app: Application) {
     this.app = app;
   }
   notify(title: string, options?: { body?: string }) {
     const notification = new Notification(title, { body: options?.body });
     return notification;
+  }
+  async openFileDialog(options?: { multiple?: boolean; title?: string; filters?: Array<{ name: string; extensions: Array<string> }> }) {
+    const tempWin = await this.app.windows.createWindow({ visible: false });
+    const result = tempWin.window.openFileDialog(options);
+    tempWin.close();
+    return result;
   }
 }
 class Application {
@@ -20,13 +26,14 @@ class Application {
   logger: Logger;
   utils: __Utils;
 
-  constructor(options: { WindowsWebview2UserDataFolder?: string; LogFilePath?: string } = {}) {
+  constructor(options: { WindowsWebview2UserDataFolder?: string; LogFilePath?: string; localProxys?: Array<{ protocolName: string; localPath: string }> } = {}) {
     this.app = new WebviewApplication();
-    this.utils = new __Utils(this.app);
+    this.utils = new __Utils(this);
     this.logger = new Logger(options.LogFilePath);
     const poolOptions = {
       WindowsWebview2UserDataFolder: options.WindowsWebview2UserDataFolder,
       logger: this.logger,
+      localProxys: options.localProxys,
     };
     this.windows = new WindowPool(this.app, poolOptions);
     this.app.whenReady();

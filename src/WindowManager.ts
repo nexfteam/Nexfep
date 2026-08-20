@@ -4,6 +4,7 @@ import { Icon, Size, Position, WindowLevel } from "./Basics.js";
 import os from "os";
 import path from "path";
 import fs from "fs";
+import { lookup } from "mrmime";
 class Window {
   window: BrowserWindow;
   webview: Webview;
@@ -22,7 +23,7 @@ class Window {
     this.id = id;
   }
   setLevel(level: WindowLevel) {
-    if (level == WindowLevel.Bottommost) {  
+    if (level == WindowLevel.Bottommost) {
       this.window.setAlwaysOnTop(false);
       this.window.setAlwaysOnBottom(true);
       return;
@@ -101,14 +102,14 @@ class Window {
   setSize(size: Size) {
     this.window.setSize(size.width, size.height, size.logical);
   }
-  getSize() {
-    return this.window.getInnerSize();
+  getSize(logical?: boolean) {
+    return this.window.getInnerSize(logical);
   }
   setPosition(position: Position) {
     this.window.setPosition(position.x, position.y, position.logical);
   }
-  getPosition() {
-    return this.window.getPosition();
+  getPosition(logical?: boolean) {
+    return this.window.getPosition(logical);
   }
   isFocused() {
     return this.window.isFocused();
@@ -151,10 +152,11 @@ class WindowPool {
   private injectCount: number;
   private windowCount: number;
   private freeWindowCount: number;
+  private localProxys: Array<{ protocolName: string; localPath: string }>;
   global: Map<string, any>;
   constructor(
     app: Application,
-    options: { WindowsWebview2UserDataFolder?: string; logger?: Logger },
+    options: { WindowsWebview2UserDataFolder?: string; logger?: Logger; localProxys?: Array<{ protocolName: string; localPath: string }>; },
   ) {
     if (os.platform() === "win32") {
       const userDataDir: string =
@@ -176,6 +178,39 @@ class WindowPool {
     this.freeWindowCount = 0;
     this.global = new Map();
     this.logger = options.logger || new Logger();
+    this.localProxys = options.localProxys || [];
+  }
+  __registryLocalProxy(window: BrowserWindow, protocolName: string, localPath: string) {
+    const basePath = path.resolve(localPath);
+    console.log(window.registerProtocol);
+    window.registerProtocol(protocolName, async (request) => {
+      try {
+        const url = new URL(request.url);
+        let relativePath = url.pathname;
+
+        if (relativePath === "/" || relativePath === "") {
+          relativePath = "/index.html";
+        }
+
+        const absolutePath = path.join(basePath, relativePath);
+        const resolvedPath = path.resolve(absolutePath);
+
+        if (!resolvedPath.startsWith(basePath)) {
+          return new Response("Forbidden", { status: 403 });
+        }
+        const content = fs.readFileSync(resolvedPath);
+        const mimeType = lookup(resolvedPath) || "application/octet-stream";
+
+        return new Response(content, {
+          status: 200,
+          headers: {
+            "Content-Type": mimeType,
+          },
+        });
+      } catch {
+        return new Response("Not Found", { status: 404 });
+      }
+    });
   }
   async __injectCode(window: Window, code: string) {
     await window.webview.evaluateScript(code);
@@ -366,6 +401,9 @@ class WindowPool {
           title: "Nexfep Window",
           visible: false,
           focused: false,
+        });
+        this.localProxys.forEach((proxy) => {
+          this.__registryLocalProxy(window, proxy.protocolName, proxy.localPath);
         });
         this.freeWindowCount++;
         const webview = window.createWebview();
