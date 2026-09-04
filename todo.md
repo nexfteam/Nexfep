@@ -8,6 +8,8 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 只包含大型功能添加计划，不包含 bug 修复、风格修改、API 微调等。
 
+无论优先级如何，本列表的计划均为长期计划
+
 随时可能根据实际情况进行修改。
 
 ---
@@ -90,24 +92,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 ---
 
-### 3. 自定义协议模块
-
-进度：`0%  ----  0/4`
-
-#### 描述
-
-封装 `@webviewjs/webview` 的自定义协议能力，在 `WindowPool` 下提供配置驱动的协议映射，支持开发/生产环境自动切换。
-
-#### 子任务列表
-
-- [ ] 在 `WindowPool` 中封装 `protocols.register()` 方法
-- [ ] 支持 `nexfep.config.json` 中的 `protocols` 配置项
-- [ ] 开发/生产环境自动切换
-- [ ] 错误处理和日志输出
-
----
-
-### 4. 文件拖入支持
+### 3. 文件拖入支持
 
 进度：`0%  ------  0/6`
 
@@ -125,7 +110,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 ---
 
-### 5. 系统主题跟随
+### 4. 系统主题跟随
 
 进度：`0%  ------  0/6`
 
@@ -209,7 +194,7 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 - [ ] 实现 `app.utils.setAutoStart(true/false)` API
 - [ ] 跨平台支持（macOS Login Items、Windows Registry、Linux .desktop）
-- [ ] 支持 `--hidden` 参数（开机启动时隐藏窗口）
+- [ ] 支持 `--auto-started` 参数来表示当前进程是否是通过开机自启动启动的（可能是其它名字，也可能是其它方式，如环境变量）
 - [ ] 支持检测当前是否已开启开机自启动
 
 ---
