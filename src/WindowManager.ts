@@ -1,4 +1,4 @@
-import { Application, BrowserWindow, Webview } from "@webviewjs/webview";
+import { Application, BrowserWindow, Webview, WebContext } from "@webviewjs/webview";
 import { Logger } from "./Logger.js";
 import { Icon, Size, Position, WindowLevel } from "./Basics.js";
 import os from "os";
@@ -153,6 +153,7 @@ class WindowPool {
   private windowCount: number;
   private freeWindowCount: number;
   private localProxys: Array<{ protocolName: string; localPath: string }>;
+  private webContext?: WebContext;
   global: Map<string, any>;
   constructor(
     app: Application,
@@ -165,7 +166,9 @@ class WindowPool {
       if (!fs.existsSync(userDataDir)) {
         fs.mkdirSync(userDataDir, { recursive: true });
       }
-      process.env.WEBVIEW2_USER_DATA_FOLDER = userDataDir;
+      this.webContext = app.createWebContext({
+        dataDirectory: userDataDir,
+      });
     }
     this.onCustomMessage = (window: Window, message: string, data: any) => {
       console.log("Get Custom Message:", message, data, "from window", window.id);
@@ -406,7 +409,9 @@ class WindowPool {
           this.__registryLocalProxy(window, proxy.protocolName, proxy.localPath);
         });
         this.freeWindowCount++;
-        const webview = window.createWebview();
+        const webview = window.createWebview({
+          webContext: this.webContext,
+        });
         const windowObj = new Window(window, webview, ++this.windowCount, this);
         this.windows.push(windowObj);
         webview.onIpcMessage((data) => {
