@@ -4,10 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      - "website/**"
-      - "README.md"
-      - "README-CN.md"
-      - ".github/workflows/pages.yml"
+      - 'website/**'
+      - 'README.md'
+      - 'README-CN.md'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -30,11 +30,16 @@ jobs:
         run: |
           mkdir -p _site
           cp -r website/. _site/
-          if [ -f README.md ]; then cp README.md _site/README.md; fi
-          if [ -f README-CN.md ]; then cp README-CN.md _site/README-CN.md; fi
+          for f in README.md README-CN.md; do
+            if [ -f "$f" ]; then
+              awk 'BEGIN{p=0} /^##[[:space:]]/{p=1} p{print}' "$f" > "_site/$f"
+            fi
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

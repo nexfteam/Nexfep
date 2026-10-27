@@ -7,7 +7,7 @@
     <style>
       :root {
         --radius: 10px;
-        --maxw: 860px;
+        --maxw: 1060px;
         --font:
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei",
           sans-serif;
@@ -68,8 +68,11 @@
       }
       .wrap {
         max-width: var(--maxw);
+        width: 100%;
+        height: 100%;
         margin: 0 auto;
         padding: 0 24px;
+        overflow: hidden;
       }
 
       header {
@@ -331,16 +334,16 @@
         gap: 12px;
       }
 
-      /* 文档模式 */
       #docsView {
         display: none;
-        padding: 32px 0 64px;
+        padding: 32px 0 0;
+        height: calc(100vh - 61px);
       }
       #mdRenderIframe {
         width: 100%;
         border: 0;
         display: block;
-        min-height: 600px;
+        height: 100%;
         background: transparent;
       }
       #docsStatus {
@@ -863,7 +866,7 @@
                 tableHead: "#eef5f0",
               };
           return [
-            "html, body { background: transparent !important; }",
+            "html, body { background: transparent !important;overflow-x: hidden; }",
             ".markdown-render { color: " +
               c.text +
               "; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 15.5px; line-height: 1.75; padding: 0 !important; }",
