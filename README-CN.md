@@ -69,11 +69,11 @@ const app = new Application({ localProxys: [{ protocolName: "app", localPath: ".
 
 **构造函数参数**
 
-| 选项                            | 类型                                                                      | 默认值                                           | 说明                                |
-| ------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
-| `WindowsWebview2UserDataFolder` | `string`（可选）                                                          | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 用户数据目录（仅 Windows） |
-| `LogFilePath`                   | `string`（可选）                                                          | 无                                               | 日志文件输出路径                    |
-| `localProxys`                   | `Array<{ protocolName: string; localPath: string }>`（可选）              | 无                                               | 自定义协议代理，用于提供本地文件服务 |
+| 选项                            | 类型                                                         | 默认值                                           | 说明                                 |
+| ------------------------------- | ------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------ |
+| `WindowsWebview2UserDataFolder` | `string`（可选）                                             | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 用户数据目录（仅 Windows）  |
+| `LogFilePath`                   | `string`（可选）                                             | 无                                               | 日志文件输出路径                     |
+| `localProxys`                   | `Array<{ protocolName: string; localPath: string }>`（可选） | 无                                               | 自定义协议代理，用于提供本地文件服务 |
 
 **属性**
 
@@ -104,11 +104,11 @@ const size = new Size(800, 600, true); // 逻辑像素（默认）
 
 **属性**
 
-| 属性     | 类型      | 说明                          |
-| -------- | --------- | ----------------------------- |
-| `width`  | `number`  | 宽度（像素）                  |
-| `height` | `number`  | 高度（像素）                  |
-| `logical`| `boolean` | 是否使用逻辑像素，默认 `true`  |
+| 属性      | 类型      | 说明                          |
+| --------- | --------- | ----------------------------- |
+| `width`   | `number`  | 宽度（像素）                  |
+| `height`  | `number`  | 高度（像素）                  |
+| `logical` | `boolean` | 是否使用逻辑像素，默认 `true` |
 
 #### Position
 
@@ -123,11 +123,11 @@ const pos = new Position(100, 100, false); // 物理像素（默认）
 
 **属性**
 
-| 属性     | 类型      | 说明                           |
-| -------- | --------- | ------------------------------ |
-| `x`      | `number`  | X 坐标（像素）                 |
-| `y`      | `number`  | Y 坐标（像素）                 |
-| `logical`| `boolean` | 是否使用逻辑像素，默认 `false`  |
+| 属性      | 类型      | 说明                           |
+| --------- | --------- | ------------------------------ |
+| `x`       | `number`  | X 坐标（像素）                 |
+| `y`       | `number`  | Y 坐标（像素）                 |
+| `logical` | `boolean` | 是否使用逻辑像素，默认 `false` |
 
 #### WindowLevel
 
@@ -143,11 +143,11 @@ window.setLevel(WindowLevel.Topmost);
 
 **值**
 
-| 值                         | 数值 | 说明     |
-| -------------------------- | ---- | -------- |
-| `WindowLevel.Bottommost`   | `-1` | 置底     |
-| `WindowLevel.Normal`       | `0`  | 正常层级 |
-| `WindowLevel.Topmost`      | `1`  | 置顶     |
+| 值                       | 数值 | 说明     |
+| ------------------------ | ---- | -------- |
+| `WindowLevel.Bottommost` | `-1` | 置底     |
+| `WindowLevel.Normal`     | `0`  | 正常层级 |
+| `WindowLevel.Topmost`    | `1`  | 置顶     |
 
 #### Icon
 
@@ -329,9 +329,7 @@ Nexfep 支持注册自定义协议处理器，用于提供本地文件服务，�
 
 ```typescript
 const app = new Application({
-  localProxys: [
-    { protocolName: "app", localPath: "./public" },
-  ],
+  localProxys: [{ protocolName: "app", localPath: "./public" }],
 });
 ```
 
@@ -381,15 +379,15 @@ const win = await pool.createWindow({
 
 **参数说明**
 
-| 选项         | 类型        | 默认值            | 说明                                                                |
-| ------------ | ----------- | ----------------- | ------------------------------------------------------------------- |
-| `visible`    | `boolean`   | `true`            | 是否立即显示窗口                                                    |
-| `decoration` | `boolean`   | `true`            | 是否使用系统窗口装饰。设为 `false` 时，窗口无边框，需要自定义标题栏 |
-| `title`      | `string`    | `"Nexfep Window"` | 窗口标题                                                            |
-| `icon`       | `Icon`      | 无                | 窗口图标                                                            |
-| `resizable`  | `boolean`   | `true`            | 窗口是否可调整大小                                                  |
-| `size`       | `Size`      | 无                | 窗口尺寸，可选                                                      |
-| `position`   | `Position`  | 无                | 窗口位置，可选                                                      |
+| 选项         | 类型       | 默认值            | 说明                                                                |
+| ------------ | ---------- | ----------------- | ------------------------------------------------------------------- |
+| `visible`    | `boolean`  | `true`            | 是否立即显示窗口                                                    |
+| `decoration` | `boolean`  | `true`            | 是否使用系统窗口装饰。设为 `false` 时，窗口无边框，需要自定义标题栏 |
+| `title`      | `string`   | `"Nexfep Window"` | 窗口标题                                                            |
+| `icon`       | `Icon`     | 无                | 窗口图标                                                            |
+| `resizable`  | `boolean`  | `true`            | 窗口是否可调整大小                                                  |
+| `size`       | `Size`     | 无                | 窗口尺寸，可选                                                      |
+| `position`   | `Position` | 无                | 窗口位置，可选                                                      |
 
 ### 窗口操作
 
@@ -753,27 +751,27 @@ nexfep build -u 7
 
 ### Application
 
-| 方法/属性               | 参数                                               | 返回值      | 说明             |
-| ----------------------- | -------------------------------------------------- | ----------- | ---------------- |
-| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath?, localProxys? }` | Application | 创建应用实例     |
-| `windows`               | /                                                  | WindowPool  | 窗口池实例       |
-| `utils`                 | /                                                  | \_\_Utils   | 工具方法（通知、文件选择弹窗） |
-| `logger`                | /                                                  | Logger      | 日志实例         |
-| `createTray(options)`   | 见 Tray 章节                                       | Tray        | 创建系统托盘图标 |
-| `createLocker(appName)` | `appName`: string                                  | Locker      | 创建应用实例锁   |
-| `exit()`                | 无                                                 | void        | 退出应用         |
+| 方法/属性               | 参数                                                             | 返回值      | 说明                           |
+| ----------------------- | ---------------------------------------------------------------- | ----------- | ------------------------------ |
+| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath?, localProxys? }` | Application | 创建应用实例                   |
+| `windows`               | /                                                                | WindowPool  | 窗口池实例                     |
+| `utils`                 | /                                                                | \_\_Utils   | 工具方法（通知、文件选择弹窗） |
+| `logger`                | /                                                                | Logger      | 日志实例                       |
+| `createTray(options)`   | 见 Tray 章节                                                     | Tray        | 创建系统托盘图标               |
+| `createLocker(appName)` | `appName`: string                                                | Locker      | 创建应用实例锁                 |
+| `exit()`                | 无                                                               | void        | 退出应用                       |
 
 ### WindowPool
 
-| 方法/属性                   | 参数                                            | 返回值            | 说明                     |
-| --------------------------- | ----------------------------------------------- | ----------------- | ------------------------ |
-| `createWindow(options?)`    | 可选参数，见上文窗口创建参数说明                | Promise\<Window>  | 创建并获取一个窗口       |
-| `handle(event, callback)`   | `event`: string, `callback`: (data: any) => any | 无                | 监听指定事件             |
-| `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any | 无                | 取消监听指定事件         |
-| `global`                    | /                                               | Map\<string, any> | 全局变量 Map             |
-| `closeWindow(window)`       | `window`: Window                                | Promise\<void>    | 关闭指定窗口并回收至池中 |
-| `onCustomMessage`           | `(window: Window, message: string, data: any) => void` | 无                | 自定义消息回调函数                                       |
-| `broadcast(event, data)`    | `event`: string, `data`: any                           | 无                | 向所有打开的窗口发送事件                                 |
+| 方法/属性                   | 参数                                                   | 返回值            | 说明                     |
+| --------------------------- | ------------------------------------------------------ | ----------------- | ------------------------ |
+| `createWindow(options?)`    | 可选参数，见上文窗口创建参数说明                       | Promise\<Window>  | 创建并获取一个窗口       |
+| `handle(event, callback)`   | `event`: string, `callback`: (data: any) => any        | 无                | 监听指定事件             |
+| `unhandle(event, callback)` | `event`: string, `callback`: (data: any) => any        | 无                | 取消监听指定事件         |
+| `global`                    | /                                                      | Map\<string, any> | 全局变量 Map             |
+| `closeWindow(window)`       | `window`: Window                                       | Promise\<void>    | 关闭指定窗口并回收至池中 |
+| `onCustomMessage`           | `(window: Window, message: string, data: any) => void` | 无                | 自定义消息回调函数       |
+| `broadcast(event, data)`    | `event`: string, `data`: any                           | 无                | 向所有打开的窗口发送事件 |
 
 ### Window
 
@@ -791,13 +789,13 @@ nexfep build -u 7
 | `setTitle(title)`                       | `title`: string                                                   | void                              | 设置窗口标题                                                  |
 | `setDecorated(isDecorated)`             | `isDecorated`: boolean                                            | void                              | 设置窗口是否带边框和标题栏                                    |
 | `setResizable(resizable)`               | `resizable`: boolean                                              | void                              | 设置窗口是否可调整大小                                        |
-| `setLevel(level)`                     | `level`: `WindowLevel`                                            | void                              | 设置窗口层级：Bottommost、Normal、Topmost                                                  |
+| `setLevel(level)`                       | `level`: `WindowLevel`                                            | void                              | 设置窗口层级：Bottommost、Normal、Topmost                     |
 | `setFullScreen(isFullScreen, options?)` | `isFullScreen`: `boolean`, `options?`: `{ borderless?: boolean }` | void                              | 设置全屏模式。`borderless: true` 为无边框全屏，否则为独占全屏 |
 | `setIcon(icon)`                         | `icon`: `Icon`                                                    | void                              | 设置窗口图标                                                  |
 | `setSize(size)`                         | `size`: `Size`                                                    | void                              | 设置窗口尺寸                                                  |
-| `getSize(logical?)`                    | `logical?`: `boolean`                                             | { width: number, height: number } | 获取窗口尺寸（像素）                                          |
+| `getSize(logical?)`                     | `logical?`: `boolean`                                             | { width: number, height: number } | 获取窗口尺寸（像素）                                          |
 | `setPosition(position)`                 | `position`: `Position`                                            | void                              | 设置窗口位置                                                  |
-| `getPosition(logical?)`                | `logical?`: `boolean`                                             | { x: number, y: number }          | 获取窗口位置（像素）                                          |
+| `getPosition(logical?)`                 | `logical?`: `boolean`                                             | { x: number, y: number }          | 获取窗口位置（像素）                                          |
 | `focus()`                               | 无                                                                | void                              | 窗口获取焦点                                                  |
 | `isFocused()`                           | 无                                                                | boolean                           | 是否有焦点                                                    |
 | `isMaximized()`                         | 无                                                                | boolean                           | 是否最大化                                                    |

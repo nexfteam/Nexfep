@@ -157,7 +157,11 @@ class WindowPool {
   global: Map<string, any>;
   constructor(
     app: Application,
-    options: { WindowsWebview2UserDataFolder?: string; logger?: Logger; localProxys?: Array<{ protocolName: string; localPath: string }>; },
+    options: {
+      WindowsWebview2UserDataFolder?: string;
+      logger?: Logger;
+      localProxys?: Array<{ protocolName: string; localPath: string }>;
+    },
   ) {
     if (os.platform() === "win32") {
       const userDataDir: string =

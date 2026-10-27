@@ -69,11 +69,11 @@ const app = new Application({ localProxys: [{ protocolName: "app", localPath: ".
 
 **Constructor Options**
 
-| Option                          | Type                                                                  | Default                                          | Description                                 |
-| ------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------- |
-| `WindowsWebview2UserDataFolder` | `string` (optional)                                                   | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 user data directory (Windows only) |
-| `LogFilePath`                   | `string` (optional)                                                   | none                                             | File path for log output                    |
-| `localProxys`                   | `Array<{ protocolName: string; localPath: string }>` (optional)       | none                                             | Custom protocol proxies for serving local files |
+| Option                          | Type                                                            | Default                                          | Description                                     |
+| ------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------- |
+| `WindowsWebview2UserDataFolder` | `string` (optional)                                             | `%LOCALAPPDATA%\NexfepDevelopment.webview2-data` | WebView2 user data directory (Windows only)     |
+| `LogFilePath`                   | `string` (optional)                                             | none                                             | File path for log output                        |
+| `localProxys`                   | `Array<{ protocolName: string; localPath: string }>` (optional) | none                                             | Custom protocol proxies for serving local files |
 
 **Properties**
 
@@ -104,11 +104,11 @@ const size = new Size(800, 600, true); // logical pixels (default)
 
 **Properties**
 
-| Property | Type     | Description                                             |
-| -------- | -------- | ------------------------------------------------------- |
-| `width`  | `number` | Width in pixels                                         |
-| `height` | `number` | Height in pixels                                        |
-| `logical`| `boolean`| Whether to use logical pixels (DPI-aware), default `true` |
+| Property  | Type      | Description                                               |
+| --------- | --------- | --------------------------------------------------------- |
+| `width`   | `number`  | Width in pixels                                           |
+| `height`  | `number`  | Height in pixels                                          |
+| `logical` | `boolean` | Whether to use logical pixels (DPI-aware), default `true` |
 
 #### Position
 
@@ -123,11 +123,11 @@ const pos = new Position(100, 100, false); // physical pixels (default)
 
 **Properties**
 
-| Property | Type     | Description                                              |
-| -------- | -------- | -------------------------------------------------------- |
-| `x`      | `number` | X position in pixels                                     |
-| `y`      | `number` | Y position in pixels                                     |
-| `logical`| `boolean`| Whether to use logical pixels (DPI-aware), default `false` |
+| Property  | Type      | Description                                                |
+| --------- | --------- | ---------------------------------------------------------- |
+| `x`       | `number`  | X position in pixels                                       |
+| `y`       | `number`  | Y position in pixels                                       |
+| `logical` | `boolean` | Whether to use logical pixels (DPI-aware), default `false` |
 
 #### WindowLevel
 
@@ -143,11 +143,11 @@ window.setLevel(WindowLevel.Topmost);
 
 **Values**
 
-| Value                       | Numeric | Description       |
-| --------------------------- | ------- | ----------------- |
-| `WindowLevel.Bottommost`    | `-1`    | Always on bottom  |
-| `WindowLevel.Normal`        | `0`     | Normal level      |
-| `WindowLevel.Topmost`       | `1`     | Always on top     |
+| Value                    | Numeric | Description      |
+| ------------------------ | ------- | ---------------- |
+| `WindowLevel.Bottommost` | `-1`    | Always on bottom |
+| `WindowLevel.Normal`     | `0`     | Normal level     |
+| `WindowLevel.Topmost`    | `1`     | Always on top    |
 
 #### Icon
 
@@ -327,9 +327,7 @@ Nexfep supports registering custom protocol handlers to serve local files, allow
 
 ```typescript
 const app = new Application({
-  localProxys: [
-    { protocolName: "app", localPath: "./public" },
-  ],
+  localProxys: [{ protocolName: "app", localPath: "./public" }],
 });
 ```
 
@@ -379,15 +377,15 @@ const win = await pool.createWindow({
 
 **Parameters**
 
-| Option       | Type        | Default           | Description                                                                                                      |
-| ------------ | ----------- | ----------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `visible`    | `boolean`   | `true`            | Whether to immediately show the window                                                                           |
-| `decoration` | `boolean`   | `true`            | Whether to use system window decorations. When `false`, the window has no border and requires a custom title bar |
-| `title`      | `string`    | `"Nexfep Window"` | Window title                                                                                                     |
-| `icon`       | `Icon`      | none              | Window icon                                                                                                      |
-| `resizable`  | `boolean`   | `true`            | Whether the window is resizable                                                                                  |
-| `size`       | `Size`      | none              | Window size, optional                                                                               |
-| `position`   | `Position`  | none              | Window position, optional                                                                                        |
+| Option       | Type       | Default           | Description                                                                                                      |
+| ------------ | ---------- | ----------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `visible`    | `boolean`  | `true`            | Whether to immediately show the window                                                                           |
+| `decoration` | `boolean`  | `true`            | Whether to use system window decorations. When `false`, the window has no border and requires a custom title bar |
+| `title`      | `string`   | `"Nexfep Window"` | Window title                                                                                                     |
+| `icon`       | `Icon`     | none              | Window icon                                                                                                      |
+| `resizable`  | `boolean`  | `true`            | Whether the window is resizable                                                                                  |
+| `size`       | `Size`     | none              | Window size, optional                                                                                            |
+| `position`   | `Position` | none              | Window position, optional                                                                                        |
 
 ### Window Operations
 
@@ -751,15 +749,15 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 
 ### Application
 
-| Method/Property         | Parameters                                         | Return Value | Description                      |
-| ----------------------- | -------------------------------------------------- | ------------ | -------------------------------- |
-| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath?, localProxys? }` | Application  | Creates the application instance |
-| `windows`               | /                                                  | WindowPool   | The window pool instance         |
-| `utils`                 | /                                                  | \_\_Utils    | Utility methods (notifications, file dialogs) |
-| `logger`                | /                                                  | Logger       | The logger instance              |
-| `createTray(options)`   | see Tray section                                   | Tray         | Creates a system tray icon       |
-| `createLocker(appName)` | `appName`: string                                  | Locker       | Creates an application lock      |
-| `exit()`                | None                                               | void         | Exits the application            |
+| Method/Property         | Parameters                                                       | Return Value | Description                                   |
+| ----------------------- | ---------------------------------------------------------------- | ------------ | --------------------------------------------- |
+| `constructor(options?)` | `{ WindowsWebview2UserDataFolder?, LogFilePath?, localProxys? }` | Application  | Creates the application instance              |
+| `windows`               | /                                                                | WindowPool   | The window pool instance                      |
+| `utils`                 | /                                                                | \_\_Utils    | Utility methods (notifications, file dialogs) |
+| `logger`                | /                                                                | Logger       | The logger instance                           |
+| `createTray(options)`   | see Tray section                                                 | Tray         | Creates a system tray icon                    |
+| `createLocker(appName)` | `appName`: string                                                | Locker       | Creates an application lock                   |
+| `exit()`                | None                                                             | void         | Exits the application                         |
 
 ### WindowPool
 
@@ -789,13 +787,13 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 | `setTitle(title)`                       | `title`: string                                                   | void                              | Sets the window title                                                                              |
 | `setDecorated(isDecorated)`             | `isDecorated`: boolean                                            | void                              | Sets whether the window has borders and title bar                                                  |
 | `setResizable(resizable)`               | `resizable`: boolean                                              | void                              | Sets whether the window is resizable                                                               |
-| `setLevel(level)`                     | `level`: `WindowLevel`                                            | void                              | Sets window level: Bottommost, Normal, Topmost                                                  |
+| `setLevel(level)`                       | `level`: `WindowLevel`                                            | void                              | Sets window level: Bottommost, Normal, Topmost                                                     |
 | `setFullScreen(isFullScreen, options?)` | `isFullScreen`: `boolean`, `options?`: `{ borderless?: boolean }` | void                              | Sets fullscreen mode. `borderless: true` for borderless fullscreen, otherwise exclusive fullscreen |
 | `setIcon(icon)`                         | `icon`: `Icon`                                                    | void                              | Sets the window icon                                                                               |
 | `setSize(size)`                         | `size`: `Size`                                                    | void                              | Sets the window size                                                                               |
-| `getSize(logical?)`                    | `logical?`: `boolean`                                             | { width: number, height: number } | Gets the window size in pixels                                                                     |
+| `getSize(logical?)`                     | `logical?`: `boolean`                                             | { width: number, height: number } | Gets the window size in pixels                                                                     |
 | `setPosition(position)`                 | `position`: `Position`                                            | void                              | Sets the window position                                                                           |
-| `getPosition(logical?)`                | `logical?`: `boolean`                                             | { x: number, y: number }          | Gets the window position in pixels                                                                 |
+| `getPosition(logical?)`                 | `logical?`: `boolean`                                             | { x: number, y: number }          | Gets the window position in pixels                                                                 |
 | `focus()`                               | None                                                              | void                              | Focuses the window                                                                                 |
 | `isFocused()`                           | None                                                              | boolean                           | Whether the window has focus                                                                       |
 | `isMaximized()`                         | None                                                              | boolean                           | Whether the window is maximized                                                                    |

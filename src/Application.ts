@@ -13,7 +13,11 @@ class __Utils {
     const notification = new Notification(title, { body: options?.body });
     return notification;
   }
-  async openFileDialog(options?: { multiple?: boolean; title?: string; filters?: Array<{ name: string; extensions: Array<string> }> }) {
+  async openFileDialog(options?: {
+    multiple?: boolean;
+    title?: string;
+    filters?: Array<{ name: string; extensions: Array<string> }>;
+  }) {
     const tempWin = await this.app.windows.createWindow({ visible: false });
     const result = tempWin.window.openFileDialog(options);
     tempWin.close();
@@ -26,7 +30,13 @@ class Application {
   logger: Logger;
   utils: __Utils;
 
-  constructor(options: { WindowsWebview2UserDataFolder?: string; LogFilePath?: string; localProxys?: Array<{ protocolName: string; localPath: string }> } = {}) {
+  constructor(
+    options: {
+      WindowsWebview2UserDataFolder?: string;
+      LogFilePath?: string;
+      localProxys?: Array<{ protocolName: string; localPath: string }>;
+    } = {},
+  ) {
     this.app = new WebviewApplication();
     this.utils = new __Utils(this);
     this.logger = new Logger(options.LogFilePath);
