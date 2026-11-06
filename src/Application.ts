@@ -4,7 +4,7 @@ import { Tray } from "./Tray.js";
 import { Logger } from "./Logger.js";
 import { Locker } from "./SingleInstance.js";
 import { Icon } from "./Basics.js";
-class __Utils {
+class Utils {
   app: Application;
   constructor(app: Application) {
     this.app = app;
@@ -28,7 +28,7 @@ class Application {
   app: WebviewApplication;
   windows: WindowPool;
   logger: Logger;
-  utils: __Utils;
+  utils: Utils;
 
   constructor(
     options: {
@@ -38,7 +38,7 @@ class Application {
     } = {},
   ) {
     this.app = new WebviewApplication();
-    this.utils = new __Utils(this);
+    this.utils = new Utils(this);
     this.logger = new Logger(options.LogFilePath);
     const poolOptions = {
       WindowsWebview2UserDataFolder: options.WindowsWebview2UserDataFolder,

@@ -4,8 +4,8 @@ class Logger {
   constructor(logFilePath?: string) {
     this.logFilePath = logFilePath;
   }
-
-  __formatConsoleArgs(args: string[]): string {
+  /** @internal */
+  _formatConsoleArgs(args: string[]): string {
     if (!Array.isArray(args) || args.length === 0) return "";
     const template = args[0];
     if (typeof template !== "string" || !template.includes("%c")) {
@@ -143,7 +143,8 @@ class Logger {
 
     return result;
   }
-  __printLog(
+  /** @internal */
+  _printLog(
     winid: number,
     type: string,
     args: string[],
@@ -158,42 +159,42 @@ class Logger {
     }
     console.log(
       `${colorANSI || ""}[${winid}] ${type}:${colorRESET || ""}`,
-      this.__formatConsoleArgs(args),
+      this._formatConsoleArgs(args),
     );
   }
   log(args: string[] | string): void {
     if (Array.isArray(args)) {
-      this.__printLog(0, "Log", args);
+      this._printLog(0, "Log", args);
     } else {
-      this.__printLog(0, "Log", [args]);
+      this._printLog(0, "Log", [args]);
     }
   }
   error(args: string[] | string): void {
     if (Array.isArray(args)) {
-      this.__printLog(0, "Error", args, "\x1b[31m", "\x1b[0m");
+      this._printLog(0, "Error", args, "\x1b[31m", "\x1b[0m");
     } else {
-      this.__printLog(0, "Error", [args], "\x1b[31m", "\x1b[0m");
+      this._printLog(0, "Error", [args], "\x1b[31m", "\x1b[0m");
     }
   }
   warn(args: string[] | string): void {
     if (Array.isArray(args)) {
-      this.__printLog(0, "Warn", args, "\x1b[33m", "\x1b[0m");
+      this._printLog(0, "Warn", args, "\x1b[33m", "\x1b[0m");
     } else {
-      this.__printLog(0, "Warn", [args], "\x1b[33m", "\x1b[0m");
+      this._printLog(0, "Warn", [args], "\x1b[33m", "\x1b[0m");
     }
   }
   info(args: string[] | string): void {
     if (Array.isArray(args)) {
-      this.__printLog(0, "Info", args, "\x1b[34m", "\x1b[0m");
+      this._printLog(0, "Info", args, "\x1b[34m", "\x1b[0m");
     } else {
-      this.__printLog(0, "Info", [args], "\x1b[34m", "\x1b[0m");
+      this._printLog(0, "Info", [args], "\x1b[34m", "\x1b[0m");
     }
   }
   debug(args: string[] | string): void {
     if (Array.isArray(args)) {
-      this.__printLog(0, "Debug", args, "\x1b[90m", "\x1b[0m");
+      this._printLog(0, "Debug", args, "\x1b[90m", "\x1b[0m");
     } else {
-      this.__printLog(0, "Debug", [args], "\x1b[90m", "\x1b[0m");
+      this._printLog(0, "Debug", [args], "\x1b[90m", "\x1b[0m");
     }
   }
   clear(): void {

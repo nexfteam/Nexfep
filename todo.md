@@ -92,42 +92,19 @@ If you want to read this todo list in English, please use translate tool or AI.
 
 ---
 
-### 3. 文件拖入支持
+### 3. 更多窗口属性
 
-进度：`0%  ------  0/6`
-
-#### 描述
-
-支持用户从文件管理器拖拽文件/文件夹到 Nexfep 应用窗口。
-
-#### 子任务列表
-
-- [ ] 实现 `window.onDropFiles(callback)` API
-- [ ] 返回拖入的文件路径列表
-- [ ] 支持拖入时显示拖放指示器（高亮区域）
-- [ ] 支持过滤拖入的文件类型（如只接受图片）
-- [ ] 支持拖入 URL（从浏览器拖链接到应用）
-
----
-
-### 4. 系统主题跟随
-
-进度：`0%  ------  0/6`
+进度：`0%  ---  0/3`
 
 #### 描述
 
-支持跟随系统主题（暗色/亮色模式），实现应用与系统主题同步。
+添加更多的窗口样式属性，如背景透明、不在任务栏显示、无阴影等
 
 #### 子任务列表
 
-- [ ] 实现 `window.getSystemTheme()` API
-- [ ] 实现 `window.onThemeChange(callback)` API
-- [ ] 跨平台支持（macOS、Windows、Linux）
-- [ ] 支持手动覆盖主题（`window.setTheme('dark')`）
-- [ ] 支持读取系统强调色（Accent Color）
-- [ ] 支持系统主题变化时自动通知所有窗口
-
----
+- [ ] 添加窗口背景透明选项
+- [ ] 添加窗口不在任务栏显示选项
+- [ ] 添加窗口无阴影选项
 
 ## Enhancement
 
@@ -196,23 +173,3 @@ If you want to read this todo list in English, please use translate tool or AI.
 - [ ] 跨平台支持（macOS Login Items、Windows Registry、Linux .desktop）
 - [ ] 支持 `--auto-started` 参数来表示当前进程是否是通过开机自启动启动的（可能是其它名字，也可能是其它方式，如环境变量）
 - [ ] 支持检测当前是否已开启开机自启动
-
----
-
-### 4. 加密存储
-
-进度：`0%  ----------  0/10`
-
-#### 描述
-
-提供安全存储敏感数据的能力（如登录态、API Key、用户凭证）。
-
-#### 子任务列表
-
-- [ ] 实现 `app/window.utils.storage.set(key, value)` API（加密存储）
-- [ ] 实现 `app/window.utils.storage.get(key)` API（解密读取）
-- [ ] 实现 `app/window.utils.storage.delete(key)` API
-- [ ] 跨平台支持（macOS Keychain、Windows Credential Manager、Linux libsecret）
-- [ ] 支持存储加密密钥的自定义（`storage.setKey()`）
-- [ ] 支持批量操作（`storage.setMultiple()` / `storage.getMultiple()`）
-- [ ] 支持存储命名空间（`storage.namespace('app')`）

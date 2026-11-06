@@ -26,48 +26,49 @@ class Tray {
       },
     });
   }
-  __ErrorWhenDestroyed() {
+  /** @internal */
+  _ErrorWhenDestroyed() {
     if (this.destroyed) {
       throw new Error("Tray has been destroyed");
     }
   }
   addMenuItem(item: { id: string; label: string }) {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.menuItems.push(item);
     this.tray.setMenu({ items: this.menuItems });
   }
   removeMenuItem(id: string) {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.menuItems = this.menuItems.filter((item) => item.id !== id);
     this.tray.setMenu({ items: this.menuItems });
   }
   setMenuItems(items: Array<{ id: string; label: string }>) {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.menuItems = items;
     this.tray.setMenu({ items: this.menuItems });
   }
   setIcon(icon: Icon) {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.tray.setIcon(icon.data, icon.width, icon.height);
   }
   on(event: string, callback: (event: any) => void) {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.tray.on(event, callback);
   }
   setTooltip(tooltip: string) {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.tray.setTooltip(tooltip);
   }
   hide() {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.tray.setVisible(false);
   }
   show() {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.tray.setVisible(true);
   }
   destroy() {
-    this.__ErrorWhenDestroyed();
+    this._ErrorWhenDestroyed();
     this.tray.dispose();
     this.destroyed = true;
   }

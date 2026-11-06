@@ -1,6 +1,6 @@
 # Nexfep
 
-语言: [English](https://github.com/nexfteam/Nexfep/blob/main/README.md) | 简体中文(当前)
+语言: [English](https://github.com/nexfteam/Nexfep/blob/main/README.md) | 简体中文(当前语言)
 
 基于 @webviewjs/webview 的桌面应用框架
 
@@ -807,12 +807,11 @@ nexfep build -u 7
 | `closeDevTools()`                       | 无                                                                | void                              | 关闭开发者工具                                                |
 | `id`                                    | 无                                                                | number                            | 窗口唯一标识，自增编号                                        |
 
-## 开发
+## 贡献
 
-```bash
-pnpm install
-pnpm run compile
-```
+Nexfep 欢迎你的贡献！
+
+提交贡献前，请参考[贡献指南](https://github.com/nexfteam/Nexfep/blob/main/CONTRIBUTING-CN.md)。
 
 ## 许可证
 

@@ -1,6 +1,6 @@
 # Nexfep
 
-Language: English(now) | [简体中文](https://github.com/nexfteam/Nexfep/blob/main/README-CN.md)
+Language: English(Current Language) | [简体中文](https://github.com/nexfteam/Nexfep/blob/main/README-CN.md)
 
 A desktop application framework based on @webviewjs/webview
 
@@ -805,12 +805,11 @@ Please do not include the outer `metadata` field, just the internal fields. Like
 | `closeDevTools()`                       | None                                                              | void                              | Closes developer tools                                                                             |
 | `id`                                    | None                                                              | number                            | Unique window identifier, auto-incrementing                                                        |
 
-## Development
+## Contributing
 
-```bash
-pnpm install
-pnpm run compile
-```
+Nexfep welcomes your contributions!
+
+Before submitting a contribution, please refer to the [Contributing Guide](https://github.com/nexfteam/Nexfep/blob/main/CONTRIBUTING.md).
 
 ## License
 

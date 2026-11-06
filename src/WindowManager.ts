@@ -136,11 +136,11 @@ class Window {
   }
   async loadURL(url: string) {
     await this.webview.loadUrl(url);
-    await this.myPool.__injectControlFunctions(this);
+    await this.myPool._injectControlFunctions(this);
   }
   async loadHTML(html: string) {
     await this.webview.loadHtml(html);
-    await this.myPool.__injectControlFunctions(this);
+    await this.myPool._injectControlFunctions(this);
   }
 }
 class WindowPool {
@@ -187,7 +187,8 @@ class WindowPool {
     this.logger = options.logger || new Logger();
     this.localProxys = options.localProxys || [];
   }
-  __registryLocalProxy(window: BrowserWindow, protocolName: string, localPath: string) {
+  /** @internal */
+  _registryLocalProxy(window: BrowserWindow, protocolName: string, localPath: string) {
     const basePath = path.resolve(localPath);
     console.log(window.registerProtocol);
     window.registerProtocol(protocolName, async (request) => {
@@ -219,10 +220,12 @@ class WindowPool {
       }
     });
   }
-  async __injectCode(window: Window, code: string) {
+  /** @internal */
+  async _injectCode(window: Window, code: string) {
     await window.webview.evaluateScript(code);
   }
-  async __injectControlFunctions(windowObj: Window) {
+  /** @internal */
+  async _injectControlFunctions(windowObj: Window) {
     const INJECT_CSS = `
         [nexfep-area-drag],
         [nexfep-area-drag] * {
@@ -360,35 +363,35 @@ class WindowPool {
             window.ipc.postMessage(JSON.stringify(MessageBody));
         }
 
-        window.__originConsoleLog = console.log;
-        window.__originConsoleError = console.error;
-        window.__originConsoleInfo = console.info;
-        window.__originConsoleWarn = console.warn;
-        window.__originConsoleDebug = console.debug;
+        window._originConsoleLog = console.log;
+        window._originConsoleError = console.error;
+        window._originConsoleInfo = console.info;
+        window._originConsoleWarn = console.warn;
+        window._originConsoleDebug = console.debug;
         console.log = (...args) => {
             const MessageBody = { type: 'NexfepConsoleLog', message: args }
             window.ipc.postMessage(JSON.stringify(MessageBody));
-            window.__originConsoleLog(...args);
+            window._originConsoleLog(...args);
         }
         console.error = (...args) => {
             const MessageBody = { type: 'NexfepConsoleError', message: args }
             window.ipc.postMessage(JSON.stringify(MessageBody));
-            window.__originConsoleError(...args);
+            window._originConsoleError(...args);
         }
         console.info = (...args) => {
             const MessageBody = { type: 'NexfepConsoleInfo', message: args }
             window.ipc.postMessage(JSON.stringify(MessageBody));
-            window.__originConsoleInfo(...args);
+            window._originConsoleInfo(...args);
         }
         console.warn = (...args) => {
             const MessageBody = { type: 'NexfepConsoleWarn', message: args }
             window.ipc.postMessage(JSON.stringify(MessageBody));
-            window.__originConsoleWarn(...args);
+            window._originConsoleWarn(...args);
         }
         console.debug = (...args) => {
             const MessageBody = { type: 'NexfepConsoleDebug', message: args }
             window.ipc.postMessage(JSON.stringify(MessageBody));
-            window.__originConsoleDebug(...args);
+            window._originConsoleDebug(...args);
         }
         
         const style = document.createElement('style');
@@ -399,9 +402,10 @@ class WindowPool {
 
         window.dispatchEvent(new CustomEvent('nexfep-load-done'));
         `;
-    await this.__injectCode(windowObj, INJECT_CODE);
+    await this._injectCode(windowObj, INJECT_CODE);
   }
-  async __createNewWindowObj(): Promise<Window> {
+  /** @internal */
+  async _createNewWindowObj(): Promise<Window> {
     return await new Promise((resolve) => {
       setImmediate(() => {
         const window = this.app.createBrowserWindow({
@@ -410,7 +414,7 @@ class WindowPool {
           focused: false,
         });
         this.localProxys.forEach((proxy) => {
-          this.__registryLocalProxy(window, proxy.protocolName, proxy.localPath);
+          this._registryLocalProxy(window, proxy.protocolName, proxy.localPath);
         });
         this.freeWindowCount++;
         const webview = window.createWebview({
@@ -431,7 +435,7 @@ class WindowPool {
                 window.ipc.postMessage(JSON.stringify(MessageBody));
               }`);
           } else if (dataObj.type == "NexfepLoadFalse") {
-            this.__injectControlFunctions(windowObj);
+            this._injectControlFunctions(windowObj);
           } else if (dataObj.type == "NexfepCloseWindow") {
             this.closeWindow(windowObj);
           } else if (dataObj.type == "NexfepMinimizeWindow") {
@@ -493,15 +497,15 @@ class WindowPool {
               }
             });
           } else if (dataObj.type == "NexfepConsoleLog") {
-            this.logger.__printLog(windowObj.id, "Log", dataObj.message);
+            this.logger._printLog(windowObj.id, "Log", dataObj.message);
           } else if (dataObj.type == "NexfepConsoleError") {
-            this.logger.__printLog(windowObj.id, "Error", dataObj.message, "\x1b[31m", "\x1b[0m");
+            this.logger._printLog(windowObj.id, "Error", dataObj.message, "\x1b[31m", "\x1b[0m");
           } else if (dataObj.type == "NexfepConsoleInfo") {
-            this.logger.__printLog(windowObj.id, "Info", dataObj.message, "\x1b[34m", "\x1b[0m");
+            this.logger._printLog(windowObj.id, "Info", dataObj.message, "\x1b[34m", "\x1b[0m");
           } else if (dataObj.type == "NexfepConsoleWarn") {
-            this.logger.__printLog(windowObj.id, "Warn", dataObj.message, "\x1b[33m", "\x1b[0m");
+            this.logger._printLog(windowObj.id, "Warn", dataObj.message, "\x1b[33m", "\x1b[0m");
           } else if (dataObj.type == "NexfepConsoleDebug") {
-            this.logger.__printLog(windowObj.id, "Debug", dataObj.message, "\x1b[90m", "\x1b[0m");
+            this.logger._printLog(windowObj.id, "Debug", dataObj.message, "\x1b[90m", "\x1b[0m");
           }
         });
         resolve(windowObj);
@@ -518,7 +522,7 @@ class WindowPool {
     position?: Position;
   }) {
     const window =
-      this.windows.find((w) => w.isOpen === false) || (await this.__createNewWindowObj());
+      this.windows.find((w) => w.isOpen === false) || (await this._createNewWindowObj());
     this.freeWindowCount--;
     if (window) {
       window.isOpen = true;
@@ -540,7 +544,7 @@ class WindowPool {
       }
     }
     if (this.freeWindowCount == 0) {
-      this.__createNewWindowObj();
+      this._createNewWindowObj();
     }
     return window;
   }
